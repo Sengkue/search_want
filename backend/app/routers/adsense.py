@@ -89,3 +89,4 @@ def get_ads_txt(db: Session = Depends(get_db)) -> PlainTextResponse:
     row = get_or_create_adsense_setting(db)
     cfg = serialize_adsense_setting(row)
     return PlainTextResponse(content=f"{cfg.ads_txt_line}\n", media_type="text/plain; charset=utf-8")
+
