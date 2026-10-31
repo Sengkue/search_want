@@ -156,3 +156,56 @@ class NotificationOut(BaseModel):
     is_read: bool
     created_at: datetime
 
+
+_ADSENSE_PUB_RE = re.compile(r"^ca-pub-\d{16}$")
+_ADSENSE_SHORT_PUB_RE = re.compile(r"^pub-\d{16}$")
+_ADSENSE_SLOT_RE = re.compile(r"^\d{6,20}$")
+
+
+class AdSenseConfigUpdate(BaseModel):
+    enabled: bool = True
+    client_id: str = Field(default="", max_length=64)
+    slot_infeed: str = Field(default="", max_length=64)
+    slot_banner: str = Field(default="", max_length=64)
+    auto_ads: bool = True
+    test_mode: bool = True
+
+    @field_validator("client_id")
+    @classmethod
+    def validate_client_id(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            return ""
+        if _ADSENSE_SHORT_PUB_RE.match(cleaned):
+            cleaned = f"ca-{cleaned}"
+        if not _ADSENSE_PUB_RE.match(cleaned):
+            raise ValueError(
+                "ລະຫັດ Publisher ID ຕ້ອງເປັນຮູບແບບ ca-pub-1234567890123456 (ຕົວເລກ 16 ຫຼັກ)"
+            )
+        return cleaned
+
+    @field_validator("slot_infeed", "slot_banner")
+    @classmethod
+    def validate_slot_id(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            return ""
+        if not _ADSENSE_SLOT_RE.match(cleaned):
+            raise ValueError(
+                "ລະຫັດ Ad Slot ID ຕ້ອງເປັນຕົວເລກ 6-20 ຫຼັກ (ຫຼື ປະວ່າງໄວ້)"
+            )
+        return cleaned
+
+
+class AdSenseConfigOut(BaseModel):
+    enabled: bool
+    client_id: str
+    publisher_id: str
+    slot_infeed: str
+    slot_banner: str
+    auto_ads: bool
+    test_mode: bool
+    ads_txt_line: str
+    updated_at: datetime
+
+
