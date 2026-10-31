@@ -319,7 +319,7 @@
     </v-row>
 
     <!-- Bottom Responsive Google AdSense Banner -->
-    <AdSenseSlot placement="banner" :variant-index="2" class="mt-3" />
+    <AdSenseSlot placement="banner" :variant-index="1" class="mt-3" />
   </v-container>
 </template>
 

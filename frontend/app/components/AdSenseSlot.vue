@@ -6,7 +6,7 @@
     :data-placement="placement"
     :data-ad-status="liveAdStatus"
   >
-    <!-- 1. REAL GOOGLE ADSENSE <ins class="adsbygoogle"> TAG (Always mounted when Client + Slot ID exist) -->
+    <!-- 1. REAL GOOGLE ADSENSE <ins class="adsbygoogle"> TAG (Always mounted & pushed when Client + Slot ID exist) -->
     <div
       v-if="canMountRealGoogleTag"
       class="sw-adsense-live-wrap"
@@ -30,147 +30,237 @@
       />
     </div>
 
-    <!-- 2. RICH VISUAL GOOGLE DISPLAY AD UNIT (Shown when Test/Preview Mode is ON and Google returns unfilled on localhost/LAN) -->
+    <!-- 2. DIVERSE GOOGLE DISPLAY NETWORK VISUAL FORMATS (3 Distinct Layouts + 8 Contextual Advertisers) -->
     <v-card
       v-if="liveAdStatus !== 'filled' && showRichVisualAd && !dismissedByUser"
       elevation="0"
       rounded="xl"
-      class="sw-visual-ad-card overflow-hidden"
-      :class="[
-        placement === 'banner' ? 'sw-visual-ad-banner' : 'sw-visual-ad-infeed',
-        isDark ? 'sw-visual-ad-dark' : 'sw-visual-ad-light',
-      ]"
+      class="sw-gdn-card overflow-hidden position-relative"
+      :class="[isDark ? 'sw-gdn-dark' : 'sw-gdn-light']"
     >
-      <!-- Top Google AdChoices & Status Bar -->
-      <div class="sw-adchoices-bar d-flex align-center justify-space-between px-3 py-1">
-        <div class="d-flex align-center ga-1 flex-wrap">
-          <span class="sw-google-ad-pill">Ad • ໂຄສະນາ</span>
-          <span class="text-body-small font-weight-bold" style="font-size: 11px; color: #0284c7">
-            Google AdSense
-          </span>
-          <span
-            v-if="hasValidClientId"
-            class="text-body-small text-medium-emphasis d-none d-sm-inline"
-            style="font-size: 10.5px"
-          >
-            ({{ effectiveClientId }}<template v-if="slotId"> • Slot {{ slotId }}</template>)
-          </span>
+      <!-- Tiny Authentic Top-Right Google AdChoices Corner Overlay ([Ad] [i] [x]) -->
+      <div class="sw-gdn-corner d-flex align-center">
+        <span class="sw-gdn-corner-label">ໂຄສະນາ • AdSense</span>
+
+        <NuxtLink
+          v-if="authStore.isAdmin"
+          to="/admin/approvals?tab=ADSENSE"
+          class="sw-gdn-corner-btn text-decoration-none"
+          title="ຕັ້ງຄ່າ Google AdSense"
+        >
+          ⚙
+        </NuxtLink>
+
+        <v-menu location="bottom end" max-width="320">
+          <template #activator="{ props: infoProps }">
+            <button
+              v-bind="infoProps"
+              type="button"
+              class="sw-gdn-corner-btn"
+              title="ຂໍ້ມູນ Google AdSense"
+            >
+              <svg width="11" height="11" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 1.5a6 6 0 100 12 6 6 0 000-12zm0 2.4a.85.85 0 110 1.7.85.85 0 010-1.7zm1 7.1h-2V9.9h.45V7.1H6.5V6h1.55v3.9h.45V11z" fill="#00aecd" />
+              </svg>
+            </button>
+          </template>
+          <v-card class="pa-3 text-body-small" rounded="lg">
+            <div class="font-weight-bold text-primary mb-1">
+              ✅ Google AdSense ເຊື່ອມຕໍ່ແລ້ວ
+            </div>
+            <div class="text-medium-emphasis mb-1" style="font-size: 11.5px">
+              Publisher: <code>{{ effectiveClientId || 'ຍັງບໍ່ໄດ້ໃສ່' }}</code>
+              <span v-if="slotId"> • Slot: <code>{{ slotId }}</code></span>
+            </div>
+            <div class="text-medium-emphasis" style="font-size: 11.5px">
+              ຕອນນີ້ເວັບລັນຢູ່ເຄື່ອງພາຍໃນ (<code>localhost</code> / IP Wi-Fi) ຈຶ່ງສະແດງໂຄສະນາຕົວຢ່າງຫຼາຍຮູບແບບຕາມໝວດຄົ້ນຫາ. ເມື່ອອັບເວັບຂຶ້ນໂດເມນ <code>.com</code> / <code>.la</code> ທີ່ Google ອະນຸມັດແລ້ວ ໂຄສະນາຈິງຈາກຜູ້ລົງໂຄສະນາ Google ຈະປ່ຽນແທນອັດຕະໂນມັດ 100%!
+            </div>
+          </v-card>
+        </v-menu>
+
+        <button
+          type="button"
+          class="sw-gdn-corner-btn"
+          title="ປິດໂຄສະນານີ້"
+          @click="dismissedByUser = true"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- FORMAT A: GOOGLE NATIVE PHOTO-TOP CARD (Like Google's Coffee Ad Demo) -->
+      <!-- ===================================================================== -->
+      <div v-if="cardFormat === 'photo-card'" class="sw-format-photo">
+        <!-- Rich 16:9 Illustrated Scene Cover -->
+        <div class="sw-photo-cover position-relative overflow-hidden" :style="{ background: activeAd.gradient }">
+          <!-- Decorative SVG Scene Graphics -->
+          <svg class="sw-scene-svg" viewBox="0 0 420 140" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient :id="`glow-${uid}`" cx="75%" cy="30%" r="60%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.34" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+              </radialGradient>
+            </defs>
+            <rect width="420" height="140" :fill="`url(#glow-${uid})`" />
+            <circle cx="345" cy="34" r="56" fill="rgba(255,255,255,0.12)" />
+            <circle cx="370" cy="110" r="74" fill="rgba(0,0,0,0.14)" />
+            <path d="M0 108 Q110 78 220 104 T420 92 L420 140 L0 140 Z" fill="rgba(255,255,255,0.12)" />
+          </svg>
+
+          <div class="position-relative d-flex align-center justify-space-between h-100 px-4 py-3 text-white" style="z-index: 1">
+            <div style="max-width: 68%">
+              <span class="sw-photo-badge mb-1">{{ activeAd.promoTag }}</span>
+              <div class="font-weight-black" style="font-size: 17px; line-height: 1.22; text-shadow: 0 2px 8px rgba(0,0,0,0.25)">
+                {{ activeAd.visualTitle }}
+              </div>
+              <div style="font-size: 11.5px; opacity: 0.92" class="mt-1">
+                {{ activeAd.visualSub }}
+              </div>
+            </div>
+
+            <div class="sw-hero-emblem d-flex align-center justify-center">
+              <v-icon :icon="activeAd.icon" size="34" color="white" />
+            </div>
+          </div>
         </div>
 
-        <div class="d-flex align-center ga-1">
-          <NuxtLink
-            v-if="authStore.isAdmin"
-            to="/admin/approvals?tab=ADSENSE"
-            class="text-decoration-none sw-adchoices-link mr-1"
-            title="ຕັ້ງຄ່າ Google AdSense"
-          >
-            ⚙ ຕັ້ງຄ່າ
-          </NuxtLink>
-
-          <!-- Google AdChoices [i] Info Tooltip -->
-          <v-menu location="bottom end" max-width="320">
-            <template #activator="{ props: infoProps }">
-              <button
-                v-bind="infoProps"
-                type="button"
-                class="sw-adchoices-icon-btn"
-                title="ຂໍ້ມູນໂຄສະນາ Google AdSense"
-              >
-                <v-icon icon="mdi-information-outline" size="13" />
-              </button>
-            </template>
-            <v-card class="pa-3 text-body-small" rounded="lg">
-              <div class="font-weight-bold text-primary mb-1">
-                ✅ Google AdSense ເຊື່ອມຕໍ່ສຳເລັດແລ້ວ!
-              </div>
-              <div class="text-medium-emphasis mb-1">
-                ລະຫັດບັນຊີ: <code>{{ effectiveClientId || 'ຍັງບໍ່ໄດ້ໃສ່' }}</code>
-                <span v-if="slotId"><br>Ad Slot: <code>{{ slotId }}</code></span>
-              </div>
-              <div class="text-medium-emphasis" style="font-size: 11.5px">
-                <strong>ເປັນຫຍັງຕອນນີ້ຈຶ່ງເຫັນໂຄສະນາຈຳລອງ?</strong><br>
-                Google ຈະສົ່ງໂຄສະນາລູກຄ້າຈິງສະເພາະເທິງໂດເມນອອນລາຍ (ເຊັ່ນ <code>.com</code> / <code>.la</code>) ທີ່ຜ່ານການກວດອະນຸມັດແລ້ວເທົ່ານັ້ນ (ບໍ່ສົ່ງເທິງ <code>localhost</code> ຫຼື IP <code>10.x.x.x</code>). ເມື່ອເວັບອອນລາຍເທິງໂດເມນຈິງ ໂຄສະນາຈິງຈາກ Google ຈະສະແດງແທນອັດຕະໂນມັດທັນທີ!
-              </div>
-            </v-card>
-          </v-menu>
+        <!-- Clean Editorial Copy + Round '>' Action Circle (Authentic Google AdSense Card Style) -->
+        <div class="pa-3 d-flex align-center justify-space-between ga-3">
+          <div style="min-width: 0; flex: 1">
+            <div class="text-title-small font-weight-black mb-1" style="line-height: 1.3">
+              {{ activeAd.headline }}
+            </div>
+            <div class="text-body-small text-medium-emphasis sw-clamp-2 mb-1" style="line-height: 1.38">
+              {{ activeAd.description }}
+            </div>
+            <div class="text-body-small text-medium-emphasis font-weight-medium" style="font-size: 11px">
+              {{ activeAd.advertiser }} • <span style="opacity: 0.8">{{ activeAd.domain }}</span>
+            </div>
+          </div>
 
           <button
             type="button"
-            class="sw-adchoices-icon-btn"
-            title="ປິດໂຄສະນານີ້ຊົ່ວຄາວ"
-            @click="dismissedByUser = true"
+            class="sw-round-arrow-btn flex-shrink-0"
+            :style="{ background: activeAd.accentColor }"
+            :title="activeAd.cta"
+            @click="cycleNextAd"
           >
-            <v-icon icon="mdi-close" size="13" />
+            <v-icon icon="mdi-chevron-right" color="white" size="22" />
           </button>
         </div>
       </div>
 
-      <!-- Rich Visual Display Ad Body (Looks & feels like an authentic Google Display Ad creative) -->
-      <div
-        class="d-flex flex-column flex-sm-row align-stretch"
-        :class="placement === 'banner' ? 'sw-banner-body' : 'sw-infeed-body'"
-      >
-        <!-- Left / Top Vibrant Visual Artwork Banner -->
-        <div
-          class="sw-ad-visual-panel d-flex flex-column align-center justify-center text-white pa-3 position-relative"
-          :style="{ background: activeAd.gradient }"
-        >
-          <span class="sw-ad-promo-tag">{{ activeAd.promoTag }}</span>
-          <v-avatar size="46" color="rgba(255,255,255,0.2)" class="mb-1 sw-ad-visual-icon">
+      <!-- ========================================================================= -->
+      <!-- FORMAT B: GOOGLE PRODUCT / APP SHOWCASE CARD (Icon + 4.9★ Rating + Pill)  -->
+      <!-- ========================================================================= -->
+      <div v-else-if="cardFormat === 'showcase-card'" class="pa-3 pt-4">
+        <div class="d-flex align-start ga-3">
+          <!-- Glossy App/Brand Squircle Emblem -->
+          <div
+            class="sw-brand-squircle d-flex flex-column align-center justify-center text-white flex-shrink-0"
+            :style="{ background: activeAd.gradient }"
+          >
             <v-icon :icon="activeAd.icon" size="26" color="white" />
-          </v-avatar>
-          <div class="font-weight-black text-center" style="font-size: 12px; line-height: 1.2">
-            {{ activeAd.visualTitle }}
+            <span style="font-size: 8.5px; font-weight: 900; margin-top: 2px">{{ activeAd.shortBadge }}</span>
+          </div>
+
+          <div style="min-width: 0; flex: 1">
+            <div class="d-flex flex-wrap align-center ga-1 mb-1">
+              <span class="font-weight-black text-title-small" style="line-height: 1.25">
+                {{ activeAd.advertiser }}
+              </span>
+              <span class="sw-rating-chip">
+                ★ {{ activeAd.rating }}
+              </span>
+              <span class="sw-offer-chip" :style="{ color: activeAd.accentColor, borderColor: activeAd.accentColor }">
+                {{ activeAd.promoTag }}
+              </span>
+            </div>
+
+            <div class="text-body-small font-weight-bold mb-1" style="line-height: 1.35">
+              {{ activeAd.headline }}
+            </div>
+
+            <div class="text-body-small text-medium-emphasis sw-clamp-2" style="line-height: 1.38">
+              {{ activeAd.description }}
+            </div>
           </div>
         </div>
 
-        <!-- Right / Bottom Advertiser Copy & CTA Button -->
-        <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between ga-2 pa-3 flex-grow-1">
+        <div class="d-flex align-center justify-space-between mt-3 pt-2 border-t">
+          <span class="text-body-small text-medium-emphasis" style="font-size: 11px">
+            🌐 {{ activeAd.domain }}
+          </span>
+
+          <v-btn
+            :color="activeAd.btnColor"
+            variant="flat"
+            size="small"
+            rounded="lg"
+            class="font-weight-bold px-4 text-white"
+            append-icon="mdi-open-in-new"
+            @click="cycleNextAd"
+          >
+            {{ activeAd.cta }}
+          </v-btn>
+        </div>
+      </div>
+
+      <!-- ============================================================================ -->
+      <!-- FORMAT C: PANORAMIC LEADERBOARD BILLBOARD (For Top & Bottom Wide Banners)    -->
+      <!-- ============================================================================ -->
+      <div v-else class="d-flex flex-column flex-sm-row align-stretch">
+        <div
+          class="sw-leaderboard-art d-flex align-center justify-center text-white px-4 py-3 position-relative overflow-hidden"
+          :style="{ background: activeAd.gradient }"
+        >
+          <div class="d-flex align-center ga-3 position-relative" style="z-index: 1">
+            <div class="sw-leaderboard-icon d-flex align-center justify-center">
+              <v-icon :icon="activeAd.icon" size="28" color="white" />
+            </div>
+            <div>
+              <div class="sw-photo-badge mb-1">{{ activeAd.promoTag }}</div>
+              <div class="font-weight-black" style="font-size: 14.5px; line-height: 1.2">
+                {{ activeAd.visualTitle }}
+              </div>
+              <div style="font-size: 11px; opacity: 0.9">{{ activeAd.visualSub }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-column flex-sm-row align-start align-sm-center justify-space-between ga-3 pa-3 px-sm-4 flex-grow-1">
           <div style="min-width: 0; flex: 1">
             <div class="d-flex align-center ga-2 mb-1">
-              <span class="text-body-small font-weight-bold text-uppercase" :style="{ color: activeAd.accentColor, fontSize: '10.5px', letterSpacing: '0.03em' }">
+              <span class="font-weight-black text-uppercase" :style="{ color: activeAd.accentColor, fontSize: '10.5px', letterSpacing: '0.04em' }">
                 {{ activeAd.advertiser }}
               </span>
-              <span class="text-body-small text-medium-emphasis" style="font-size: 10.5px">
+              <span class="sw-rating-chip">★ {{ activeAd.rating }}</span>
+              <span class="text-body-small text-medium-emphasis d-none d-md-inline" style="font-size: 11px">
                 • {{ activeAd.domain }}
               </span>
             </div>
 
-            <div class="text-title-small font-weight-black mb-1" style="line-height: 1.3">
+            <div class="text-title-small font-weight-black mb-1" style="line-height: 1.28">
               {{ activeAd.headline }}
             </div>
 
-            <div class="text-body-small text-medium-emphasis sw-clamp-2" style="line-height: 1.4">
+            <div class="text-body-small text-medium-emphasis sw-clamp-1" style="line-height: 1.38">
               {{ activeAd.description }}
             </div>
           </div>
 
-          <div class="d-flex align-center justify-space-between w-100 w-sm-auto ga-2 mt-1 mt-sm-0">
-            <!-- Rotating Ad Carousel Dots -->
-            <div class="d-flex align-center ga-1 mr-1">
-              <button
-                v-for="(_, dotIdx) in richAds"
-                :key="dotIdx"
-                type="button"
-                class="sw-ad-dot"
-                :class="{ 'is-active': dotIdx === currentAdIdx }"
-                :aria-label="`ໂຄສະນາ ${dotIdx + 1}`"
-                @click="currentAdIdx = dotIdx"
-              />
-            </div>
-
-            <v-btn
-              :color="activeAd.btnColor"
-              variant="flat"
-              size="small"
-              rounded="pill"
-              append-icon="mdi-chevron-right"
-              class="font-weight-bold px-4 flex-shrink-0 text-white"
-              @click="cycleNextAd"
-            >
-              {{ activeAd.cta }}
-            </v-btn>
-          </div>
+          <v-btn
+            :color="activeAd.btnColor"
+            variant="flat"
+            size="small"
+            rounded="pill"
+            append-icon="mdi-arrow-right"
+            class="font-weight-bold px-5 flex-shrink-0 text-white"
+            @click="cycleNextAd"
+          >
+            {{ activeAd.cta }}
+          </v-btn>
         </div>
       </div>
     </v-card>
@@ -180,6 +270,7 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '~/stores/auth'
+import { useShopsStore } from '~/stores/shops'
 
 const props = withDefaults(
   defineProps<{
@@ -191,7 +282,9 @@ const props = withDefaults(
   },
 )
 
+const uid = Math.random().toString(36).slice(2, 8)
 const authStore = useAuthStore()
+const shopsStore = useShopsStore()
 const theme = useTheme()
 const isDark = computed(() => theme.global.current.value.dark)
 
@@ -216,11 +309,6 @@ const slotId = computed(() =>
 )
 
 const canMountRealGoogleTag = computed(() => hasValidClientId.value && Boolean(slotId.value))
-
-/**
- * Show rich visual display ad whenever Test/Preview Mode is ON and Google hasn't filled
- * a live paid creative (e.g. on localhost / LAN IP 10.227.50.251 or while awaiting domain review).
- */
 const showRichVisualAd = computed(() => adsenseConfig.value.test_mode)
 
 const shouldDisplay = computed(() => {
@@ -230,68 +318,222 @@ const shouldDisplay = computed(() => {
   return canMountRealGoogleTag.value || showRichVisualAd.value
 })
 
-const richAds = [
+/**
+ * Each slot uses a distinct Google Display Network visual format so ads never look repetitive:
+ * - Wide banners use 'leaderboard' (top) or 'showcase-card' (secondary)
+ * - In-feed cards alternate between 'photo-card' (16:9 image-top card) and 'showcase-card' (icon + ★ rating card)
+ */
+const cardFormat = computed<'photo-card' | 'showcase-card' | 'leaderboard'>(() => {
+  if (props.placement === 'banner') {
+    return 'leaderboard'
+  }
+  return props.variantIndex % 2 === 0 ? 'photo-card' : 'showcase-card'
+})
+
+interface RichAdCreative {
+  id: string
+  topic: 'auto' | 'tech' | 'home' | 'lifestyle' | 'finance' | 'travel'
+  advertiser: string
+  domain: string
+  rating: string
+  shortBadge: string
+  promoTag: string
+  visualTitle: string
+  visualSub: string
+  icon: string
+  gradient: string
+  accentColor: string
+  btnColor: string
+  headline: string
+  description: string
+  cta: string
+}
+
+const allCreatives: RichAdCreative[] = [
   {
+    id: 'supernet-5g',
+    topic: 'tech',
     advertiser: 'Lao SuperNet 5G',
     domain: 'supernet5g.la',
-    promoTag: 'PROMO 5G',
-    visualTitle: '5G ໄວສຸດ ບໍ່ຈຳກັດ',
-    icon: 'mdi-access-point-network',
-    gradient: 'linear-gradient(135deg, #1D4ED8 0%, #0EA5E9 100%)',
+    rating: '4.9',
+    shortBadge: '5G MAX',
+    promoTag: 'ຟຣີ +20GB',
+    visualTitle: 'ເນັດ 5G ໄວສຸດທົ່ວລາວ',
+    visualSub: 'ໂບນັດ 20GB ສຳລັບລູກຄ້າໃໝ່',
+    icon: 'mdi-Signal-5g'.toLowerCase().replace('signal-5g', 'access-point-network'),
+    gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0284C7 55%, #38BDF8 100%)',
     accentColor: '#0284C7',
     btnColor: 'primary',
-    headline: 'ແພັກເກັດເນັດມືຖື 5G ຄວາມໄວສູງ — ຫຼິ້ນເນັດ & ນຳທາງ GPS ບໍ່ສະດຸດ!',
-    description: 'ສະໝັກມື້ນີ້ຮັບດາຕ້າໂບນັດຟຣີ 20GB ທົ່ວນະຄອນຫຼວງວຽງຈັນ ແລະ ຕ່າງແຂວງ.',
-    cta: 'ເບິ່ງແພັກເກັດ',
+    headline: 'ແພັກເກັດເນັດມືຖື 5G ຄວາມໄວສູງ — ເປີດແຜນທີ່ GPS & ດູໜັງ 4K ບໍ່ສະດຸດ!',
+    description: 'ສະໝັກມື້ນີ້ຮັບດາຕ້າໂບນັດຟຣີ 20GB ໃຊ້ໄດ້ທົ່ວນະຄອນຫຼວງວຽງຈັນ ແລະ ທຸກແຂວງ.',
+    cta: 'ສະໝັກແພັກເກັດ',
   },
   {
-    advertiser: 'Lao SafeDrive Insurance',
-    domain: 'safedrive.la',
-    promoTag: '24/7 CARE',
-    visualTitle: 'ປະກັນໄພລົດ 24 ຊມ.',
-    icon: 'mdi-shield-car',
-    gradient: 'linear-gradient(135deg, #059669 0%, #10B981 100%)',
-    accentColor: '#059669',
-    btnColor: 'success',
-    headline: 'ລົດເສຍກາງທາງບໍ່ຕ້ອງກັງວົນ! ປະກັນໄພລົດຍົນ ພ້ອມລົດລາກຟຣີ 24 ຊົ່ວໂມງ',
-    description: 'ຄຸ້ມຄອງທຸກອຸບັດຕິເຫດ, ແບັດເຕີຣີ້ໝົດ ແລະ ບໍລິການຊ່ວຍເຫຼືອສຸກເສີນເຖິງທີ່.',
-    cta: 'ເຊັກລາຄາຟຣີ',
-  },
-  {
+    id: 'bolaven-coffee',
+    topic: 'lifestyle',
     advertiser: 'Bolaven Roast Café',
     domain: 'bolavencafe.la',
-    promoTag: 'BUY 1 GET 1',
-    visualTitle: 'ກາເຟສົດ ປາກຊ່ອງ',
-    icon: 'mdi-coffee-outline',
-    gradient: 'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)',
-    accentColor: '#D97706',
+    rating: '4.9',
+    shortBadge: 'CAFE',
+    promoTag: 'ຊື້ 1 ແຖມ 1',
+    visualTitle: 'ກາເຟສົດ ພູພຽງບໍລະເວນ',
+    visualSub: 'ຄົ່ວໃໝ່ທຸກເຊົ້າ • ສົ່ງດ່ວນ 20 ນາທີ',
+    icon: 'mdi-coffee',
+    gradient: 'linear-gradient(135deg, #451A03 0%, #92400E 55%, #D97706 100%)',
+    accentColor: '#B45309',
     btnColor: 'warning',
-    headline: 'ກາເຟອາຣາບິກ້າແທ້ຈາກພູພຽງບໍລະເວນ — ສັ່ງຜ່ານແອັບ ຊື້ 1 ແຖມ 1!',
-    description: 'ຫອມເຂັ້ມ ສົດໃໝ່ທຸກມື້ ພ້ອມບໍລິການສົ່ງດ່ວນພາຍໃນ 25 ນາທີ.',
-    cta: 'ສັ່ງເລີຍ',
+    headline: 'ຫອມເຂັ້ມກາເຟອາຣາບິກ້າແທ້ 100% — ສັ່ງມື້ນີ້ ຊື້ 1 ແກ້ວ ແຖມຟຣີ 1 ແກ້ວ!',
+    description: 'ມີທັງອາເມຣິກາໂນ້ເຢັນ, ລາເຕ້ຄາຣາເມວ ແລະ ເຂົ້າໜົມອົບສົດໃໝ່ ພ້ອມສົ່ງເຖິງຫ້ອງການ.',
+    cta: 'ສັ່ງກາເຟເລີຍ',
   },
   {
-    advertiser: 'CoolHome Aircon Pro',
-    domain: 'coolhome.la',
-    promoTag: 'SALE -30%',
-    visualTitle: 'ລ້າງແອ & ເຕີມນ້ຳຢາ',
-    icon: 'mdi-air-conditioner',
-    gradient: 'linear-gradient(135deg, #6D28D9 0%, #3B82F6 100%)',
-    accentColor: '#7C3AED',
+    id: 'tire-center',
+    topic: 'auto',
+    advertiser: 'Vientiane AutoTire & Battery',
+    domain: 'autotirelaos.com',
+    rating: '4.8',
+    shortBadge: '0% ຜ່ອນ',
+    promoTag: 'ຜ່ອນ 0% • 6 ເດືອນ',
+    visualTitle: 'ປ່ຽນຢາງລົດ 4 ເສັ້ນ ຟຣີຕັ້ງສູນ',
+    visualSub: 'Michelin • Bridgestone • Yokohama',
+    icon: 'mdi-tire',
+    gradient: 'linear-gradient(135deg, #0F172A 0%, #1E40AF 60%, #F59E0B 100%)',
+    accentColor: '#1D4ED8',
     btnColor: 'primary',
-    headline: 'ໂປຣໂມຊັນລ້າງແອບ້ານ & ຫ້ອງການ ຫຼຸດ 30% — ເຢັນໄວ ປະຢັດໄຟ!',
-    description: 'ທີມຊ່າງມືອາຊີບ ຮັບປະກັນວຽກສ້ອມແປງ 90 ວັນ ເອີ້ນໃຊ້ບໍລິການເຖິງບ້ານ.',
-    cta: 'ຈອງຄິວຊ່າງ',
+    headline: 'ໂປຣປ່ຽນຢາງລົດໃໝ່ 4 ເສັ້ນ ຜ່ອນ 0% ດອກເບ້ຍ + ແຖມຟຣີກວດເຊັກຊ່ວງລ່າງ 24 ລາຍການ',
+    description: 'ຮັບປະກັນຢາງແທ້ຈາກສູນ ພ້ອມບໍລິການປ່ຽນແບັດເຕີຣີ້ລົດນອກສະຖານທີ່ທົ່ວວຽງຈັນ.',
+    cta: 'ເຊັກລາຄາຢາງ',
+  },
+  {
+    id: 'safedrive-insure',
+    topic: 'auto',
+    advertiser: 'Lao SafeDrive Insurance',
+    domain: 'safedrive.la',
+    rating: '4.9',
+    shortBadge: '24/7',
+    promoTag: 'ຟຣີລົດລາກ 24 ຊມ.',
+    visualTitle: 'ປະກັນໄພລົດຍົນ ຊັ້ນ 1 ອຸ່ນໃຈທຸກເສັ້ນທາງ',
+    visualSub: 'ເຄລມໄວພາຍໃນ 15 ນາທີ ຜ່ານມືຖື',
+    icon: 'mdi-shield-car',
+    gradient: 'linear-gradient(135deg, #064E3B 0%, #059669 58%, #34D399 100%)',
+    accentColor: '#059669',
+    btnColor: 'success',
+    headline: 'ລົດເສຍ ຫຼື ເກີດອຸບັດຕິເຫດກາງທາງ ມີທີມຊ່ວຍເຫຼືອ ແລະ ລົດລາກຟຣີ 24 ຊົ່ວໂມງ!',
+    description: 'ເບ້ຍປະກັນເລີ່ມຕົ້ນພຽງມື້ລະ 5,000 ກີບ ຄຸ້ມຄອງຄົບທັງລົດນ້ຳມັນ ແລະ ລົດໄຟຟ້າ EV.',
+    cta: 'ຄຳນວນເບ້ຍຟຣີ',
+  },
+  {
+    id: 'galaxy-icenter',
+    topic: 'tech',
+    advertiser: 'SmartTech Center Vientiane',
+    domain: 'smarttech.la',
+    rating: '4.9',
+    shortBadge: 'TRADE-IN',
+    promoTag: 'ເກົ່າແລກໃໝ່ -30%',
+    visualTitle: 'ມືຖືຈໍແຕກ ນຳມາເທີນເຄື່ອງໃໝ່ໄດ້!',
+    visualSub: 'ຮັບສ່ວນຫຼຸດສູງສຸດ 3,500,000 ກີບ',
+    icon: 'mdi-cellphone-screenshot',
+    gradient: 'linear-gradient(135deg, #311042 0%, #6D28D9 55%, #EC4899 100%)',
+    accentColor: '#7C3AED',
+    btnColor: 'secondary',
+    headline: 'ຢ່າປ່ອຍມືຖືເກົ່າຖິ້ມລ້າ! ເຄື່ອງຈໍແຕກ-ແບັດເສື່ອມ ນຳມາແລກຊື້ເຄື່ອງໃໝ່ສູນແທ້ໄດ້ທັນທີ',
+    description: 'ຜ່ອນສະບາຍ 0% ພ້ອມຮັບປະກັນສູນ 1 ປີເຕັມ ແລະ ຟິມກັນແຕກເກຣດພຣີມຽມຟຣີ.',
+    cta: 'ປະເມີນລາຄາເຄື່ອງ',
+  },
+  {
+    id: 'coolhome-aircon',
+    topic: 'home',
+    advertiser: 'CoolHome Inverter Laos',
+    domain: 'coolhome.la',
+    rating: '4.8',
+    shortBadge: 'INVERTER',
+    promoTag: 'ຫຼຸດ 30% + ຕິດຕັ້ງຟຣີ',
+    visualTitle: 'ແອອິນເວີເຕີ້ ປະຢັດໄຟສູງສຸດ 50%',
+    visualSub: 'ເຢັນໄວ ງຽບສະໜິດ ຮັບປະກັນຄອມເພຣສເຊີ້ 10 ປີ',
+    icon: 'mdi-air-conditioner',
+    gradient: 'linear-gradient(135deg, #0C4A6E 0%, #0284C7 55%, #2DD4BF 100%)',
+    accentColor: '#0284C7',
+    btnColor: 'primary',
+    headline: 'ອາກາດຮ້ອນແນວນີ້ ປ່ຽນມາໃຊ້ແອ Inverter ເບີ 5 — ຕິດຕັ້ງຟຣີພາຍໃນມື້ດຽວ!',
+    description: 'ແຖມຟຣີທໍ່ທອງແດງ 4 ແມັດ ແລະ ບໍລິການລ້າງແອຟຣີ 2 ຄັ້ງທຳອິດ.',
+    cta: 'ເບິ່ງລຸ້ນທີ່ຫຼຸດລາຄາ',
+  },
+  {
+    id: 'smartpay-qr',
+    topic: 'finance',
+    advertiser: 'LaoPay Digital Wallet',
+    domain: 'laopay.la',
+    rating: '4.9',
+    shortBadge: 'CASHBACK',
+    promoTag: 'ຄືນເງິນ 10%',
+    visualTitle: 'ສະແກນ QR ຈ່າຍຄ່າຊ່າງ ຮັບເງິນຄືນທັນທີ',
+    visualSub: 'ໃຊ້ໄດ້ທຸກຮ້ານສ້ອມແປງ ແລະ ຮ້ານຄ້າທົ່ວປະເທດ',
+    icon: 'mdi-qrcode-scan',
+    gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 55%, #FBBF24 100%)',
+    accentColor: '#EA580C',
+    btnColor: 'warning',
+    headline: 'ຈ່າຍຄ່າສ້ອມແປງລົດ, ຄ່າຢາ ຫຼື ຄ່າກາເຟຜ່ານ QR ຮັບເງິນຄືນ Cashback 10% ທຸກບິນ!',
+    description: 'ດາວໂຫຼດຟຣີ ບໍ່ມີຄ່າທຳນຽມລາຍປີ ໂອນໄວປອດໄພຕະຫຼອດ 24 ຊົ່ວໂມງ.',
+    cta: 'ຮັບສິດ Cashback',
+  },
+  {
+    id: 'vangvieng-resort',
+    topic: 'travel',
+    advertiser: 'NamSong Riverside Resort',
+    domain: 'namsongresort.la',
+    rating: '4.9',
+    shortBadge: 'RESORT',
+    promoTag: 'ຫຼຸດ 40% ທ້າຍອາທິດ',
+    visualTitle: 'ພັກຜ່ອນແຄມນ້ຳຊອງ ວັງວຽງ ວິວພູຜາ',
+    visualSub: 'ລວມອາຫານເຊົ້າ 2 ທ່ານ + ສະລອຍນ້ຳວິວພູ',
+    icon: 'mdi-island',
+    gradient: 'linear-gradient(135deg, #134E4A 0%, #0D9488 55%, #38BDF8 100%)',
+    accentColor: '#0D9488',
+    btnColor: 'success',
+    headline: 'ຂັບລົດທ່ຽວວັງວຽງເສົາ-ອາທິດນີ້! ຫ້ອງພັກວິວແມ່ນ້ຳຊອງ ຫຼຸດພິເສດ 40%',
+    description: 'ເດີນທາງຈາກວຽງຈັນພຽງ 1 ຊົ່ວໂມງເຄິ່ງ ຜ່ານທາງດ່ວນ ມີບ່ອນຈອດລົດກວ້າງຂວາງປອດໄພ.',
+    cta: 'ຈອງຫ້ອງພັກລາຄາພິເສດ',
   },
 ]
 
-const initialIdx = ((props.placement === 'banner' ? 0 : 1) + props.variantIndex) % richAds.length
-const currentAdIdx = ref(initialIdx)
+/**
+ * Contextual AdSense Ordering:
+ * Just like Google AdSense contextual targeting, prioritize relevant topics when the user searches
+ * a specific problem (car/tire, phone/screen, aircon/pipe), while keeping every slot on the page unique!
+ */
+const orderedPool = computed<RichAdCreative[]>(() => {
+  const q = (shopsStore.problemQuery || '').toLowerCase()
+  let preferredTopic: RichAdCreative['topic'] | null = null
+  if (q.includes('ລົດ') || q.includes('ຢາງ') || q.includes('ເຄື່ອງ') || q.includes('ແບັດ')) {
+    preferredTopic = 'auto'
+  } else if (q.includes('ຈໍ') || q.includes('ໂທລະສັບ') || q.includes('ຄອມ')) {
+    preferredTopic = 'tech'
+  } else if (q.includes('ແອ') || q.includes('ນ້ຳ') || q.includes('ໄຟ')) {
+    preferredTopic = 'home'
+  }
 
-const activeAd = computed(() => richAds[currentAdIdx.value % richAds.length]!)
+  if (!preferredTopic) return allCreatives
+  const matching = allCreatives.filter((c) => c.topic === preferredTopic)
+  const rest = allCreatives.filter((c) => c.topic !== preferredTopic)
+  return [...matching, ...rest]
+})
+
+// Guarantee every slot index starts on a completely different creative!
+const slotSeedOffset = computed(() => {
+  const base = props.placement === 'banner' ? props.variantIndex * 3 : 1 + props.variantIndex * 2
+  return base % orderedPool.value.length
+})
+
+const rotationTick = ref(0)
+
+const activeAd = computed(() => {
+  const pool = orderedPool.value
+  const idx = (slotSeedOffset.value + rotationTick.value) % pool.length
+  return pool[idx]!
+})
 
 function cycleNextAd() {
-  currentAdIdx.value = (currentAdIdx.value + 1) % richAds.length
+  rotationTick.value += 1
 }
 
 function observeAdStatus() {
@@ -334,9 +576,11 @@ watch([canMountRealGoogleTag, effectiveClientId, slotId], () => {
 
 onMounted(() => {
   nextTick(() => tryPushAdSense())
+  // Stagger rotation interval per slot (12s, 15s, 18s...) so slots never switch in lockstep
+  const intervalMs = 12000 + (props.variantIndex % 5) * 3200
   rotateTimer = setInterval(() => {
-    currentAdIdx.value = (currentAdIdx.value + 1) % richAds.length
-  }, 7500)
+    rotationTick.value += 1
+  }, intervalMs)
 })
 
 onBeforeUnmount(() => {
@@ -360,102 +604,165 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.sw-visual-ad-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.sw-gdn-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.sw-visual-ad-light {
+.sw-gdn-light {
   background: #ffffff !important;
-  border: 1.5px solid rgba(14, 165, 233, 0.35) !important;
-  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.08) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06) !important;
 }
 
-.sw-visual-ad-dark {
-  background: rgba(15, 25, 42, 0.96) !important;
-  border: 1.5px solid rgba(56, 189, 248, 0.32) !important;
+.sw-gdn-dark {
+  background: rgba(17, 26, 43, 0.96) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
   box-shadow: 0 6px 22px rgba(0, 0, 0, 0.35) !important;
 }
 
-.sw-adchoices-bar {
-  background: rgba(14, 165, 233, 0.08);
-  border-bottom: 1px solid rgba(14, 165, 233, 0.16);
+/* Authentic Google AdChoices top-right corner strip */
+.sw-gdn-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 5;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom-left-radius: 8px;
+  padding: 1px 5px;
+  gap: 3px;
+  box-shadow: -1px 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.sw-google-ad-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 1px 7px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 800;
-  color: #ffffff;
-  background: #0284c7;
-  letter-spacing: 0.02em;
+.sw-gdn-dark .sw-gdn-corner {
+  background: rgba(15, 23, 42, 0.92);
 }
 
-.sw-adchoices-link {
-  font-size: 10.5px;
+.sw-gdn-corner-label {
+  font-size: 9.5px;
   font-weight: 700;
-  color: #0284c7;
+  color: #00aecd;
+  padding-right: 2px;
 }
 
-.sw-adchoices-icon-btn {
+.sw-gdn-corner-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 19px;
-  height: 19px;
-  border-radius: 4px;
+  width: 16px;
+  height: 16px;
   border: none;
-  background: rgba(2, 132, 199, 0.12);
-  color: #0284c7;
+  background: transparent;
+  color: #00aecd;
+  font-size: 10px;
+  line-height: 1;
   cursor: pointer;
-  transition: background 0.15s ease;
+  padding: 0;
+  border-radius: 3px;
 }
 
-.sw-adchoices-icon-btn:hover {
-  background: rgba(2, 132, 199, 0.24);
+.sw-gdn-corner-btn:hover {
+  background: rgba(0, 174, 205, 0.14);
 }
 
-.sw-ad-visual-panel {
-  min-width: 142px;
-  min-height: 92px;
+/* Format A: Photo-Top Card */
+.sw-photo-cover {
+  min-height: 118px;
+}
+
+.sw-scene-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sw-photo-badge {
+  display: inline-block;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(4px);
+}
+
+.sw-hero-emblem {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(4px);
+  flex-shrink: 0;
+}
+
+.sw-round-arrow-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease;
+}
+
+.sw-round-arrow-btn:hover {
+  transform: scale(1.06);
+}
+
+/* Format B: Product / App Showcase Card */
+.sw-brand-squircle {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.sw-rating-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #d97706;
+  background: rgba(245, 158, 11, 0.14);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+
+.sw-offer-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid currentColor;
+  padding: 0 6px;
+  border-radius: 5px;
+}
+
+/* Format C: Wide Leaderboard */
+.sw-leaderboard-art {
+  min-width: 265px;
 }
 
 @media (max-width: 599px) {
-  .sw-ad-visual-panel {
+  .sw-leaderboard-art {
     width: 100%;
-    min-height: 76px;
-    flex-direction: row !important;
+    min-width: 0;
     justify-content: flex-start !important;
-    gap: 10px;
   }
 }
 
-.sw-ad-promo-tag {
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.25);
-  margin-bottom: 4px;
-}
-
-.sw-ad-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  border: none;
-  padding: 0;
-  background: rgba(148, 163, 184, 0.45);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.sw-ad-dot.is-active {
-  width: 16px;
-  border-radius: 999px;
-  background: #0284c7;
+.sw-leaderboard-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  flex-shrink: 0;
 }
 </style>
