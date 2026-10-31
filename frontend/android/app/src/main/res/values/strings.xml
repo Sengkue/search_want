@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Search-Want</string>
+    <string name="title_activity_main">Search-Want</string>
+    <string name="package_name">com.searchwant.app</string>
+    <string name="custom_url_scheme">com.searchwant.app</string>
+</resources>

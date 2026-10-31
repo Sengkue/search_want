@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="12" y1="116" x2="116" y2="12" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0D1E8A" />
+      <stop offset="52%" stop-color="#1A6CE8" />
+      <stop offset="100%" stop-color="#36D1F6" />
+    </linearGradient>
+    <linearGradient id="pin" x1="40" y1="20" x2="88" y2="104" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#DCE8FB" />
+    </linearGradient>
+    <linearGradient id="well" x1="42" y1="32" x2="86" y2="76" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1240B8" />
+      <stop offset="100%" stop-color="#228BE6" />
+    </linearGradient>
+    <linearGradient id="wrench" x1="46" y1="72" x2="80" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF6B4A" />
+      <stop offset="50%" stop-color="#FF9828" />
+      <stop offset="100%" stop-color="#FFD452" />
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle App Icon Background -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bg)" />
+
+  <!-- White Glossy Map Pin -->
+  <path
+    d="M64 18C43.56 18 27 34.34 27 54.5C27 77.6 54.8 103.5 60.85 108.8C62.66 110.38 65.34 110.38 67.15 108.8C73.2 103.5 101 77.6 101 54.5C101 34.34 84.44 18 64 18Z"
+    fill="url(#pin)"
+  />
+
+  <!-- Inner Blue Radar Well -->
+  <circle cx="64" cy="54" r="24.5" fill="url(#well)" />
+
+  <!-- Sonar Pulse Rings -->
+  <circle cx="64" cy="54" r="20" stroke="#FDBA74" stroke-opacity="0.55" stroke-width="1.6" />
+  <circle cx="64" cy="54" r="14.5" stroke="#FED7AA" stroke-opacity="0.65" stroke-width="1.5" />
+
+  <!-- Glowing Amber Repair Wrench -->
+  <path
+    d="M74.8 43.2C72.2 40.6 68.3 40.1 65.1 41.7L70.3 46.9L66.9 50.3L61.7 45.1C60.1 48.3 60.6 52.2 63.2 54.8C65.5 57.1 68.9 57.8 71.9 56.7L72.4 56.5L78.3 50.6C78.7 48.0 77.4 45.8 74.8 43.2Z"
+    fill="url(#wrench)"
+  />
+  <rect
+    x="45.5"
+    y="61.5"
+    width="20"
+    height="7.6"
+    rx="3.8"
+    transform="rotate(-45 45.5 61.5)"
+    fill="url(#wrench)"
+  />
+</svg>
+

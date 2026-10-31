@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+backend/.venv/
+*.db
+.pytest_cache/
+
+# Node / Nuxt
+node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/dist/
+frontend/.certs/
+*.log
+.env
+.env.android
+frontend/android/local.properties
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/.gradle/
+frontend/android/app/src/main/assets/public/
+
+
+dist/
+*.apk

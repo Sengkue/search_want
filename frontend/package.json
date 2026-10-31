@@ -1,0 +1,34 @@
+{
+  "name": "search-want-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --host 0.0.0.0 --port 3000",
+    "dev:https": "node scripts/https-dev-proxy.mjs",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "android:sync": "node scripts/build-android.mjs --sync-only",
+    "android:apk": "node scripts/build-android.mjs",
+    "android:open": "cap open android",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/geolocation": "^8.2.4",
+    "@mdi/font": "^7.4.47",
+    "@pinia/nuxt": "^1.0.3",
+    "leaflet": "^1.9.4",
+    "nuxt": "^4.6.3",
+    "pinia": "^4.1.0",
+    "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
+    "vuetify": "^4.3.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
+    "@types/leaflet": "^1.9.22",
+    "typescript": "^7.0.2"
+  }
+}
