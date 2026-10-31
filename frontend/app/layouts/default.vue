@@ -469,6 +469,31 @@
             ຍັງບໍ່ມີການແຈ້ງເຕືອນ
           </div>
 
+          <div class="d-flex ga-2 mb-2">
+            <v-btn
+              color="primary"
+              variant="tonal"
+              size="small"
+              class="flex-grow-1"
+              prepend-icon="mdi-key-change"
+              @click="mobileMenuOpen = false; openPasswordDialog()"
+            >
+              ປ່ຽນລະຫັດຜ່ານ
+            </v-btn>
+            <v-btn
+              v-if="authStore.isSuperAdmin"
+              to="/admin/approvals?tab=RBAC"
+              color="deep-purple"
+              variant="tonal"
+              size="small"
+              class="flex-grow-1"
+              prepend-icon="mdi-shield-crown-outline"
+              @click="mobileMenuOpen = false"
+            >
+              ຈັດການສິດ
+            </v-btn>
+          </div>
+
           <v-btn
             color="error"
             variant="tonal"
@@ -480,6 +505,72 @@
             ອອກຈາກລະບົບ
           </v-btn>
         </template>
+      </v-card>
+    </v-dialog>
+
+    <!-- Self-Service Password Rotation Dialog (Revokes old tokens across other devices) -->
+    <v-dialog v-model="passwordDialogOpen" max-width="420">
+      <v-card rounded="xl" class="pa-4 pa-md-5">
+        <div class="d-flex align-center justify-space-between mb-2">
+          <div class="text-title-medium font-weight-bold d-flex align-center ga-2">
+            <v-icon icon="mdi-lock-reset" color="primary" size="20" />
+            <span>ປ່ຽນລະຫັດຜ່ານໃໝ່</span>
+          </div>
+          <v-btn icon="mdi-close" variant="text" size="x-small" @click="passwordDialogOpen = false" />
+        </div>
+        <p class="text-body-small text-medium-emphasis mb-3">
+          ເມື່ອປ່ຽນລະຫັດຜ່ານແລ້ວ ເຊດຊັນທີ່ເຄີຍເຂົ້າສູ່ລະບົບໄວ້ໃນເຄື່ອງອື່ນຈະຖືກຍົກເລີກທັນທີເພື່ອຄວາມປອດໄພ.
+        </p>
+
+        <v-alert
+          v-if="pwError"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mb-3 text-body-small"
+        >
+          {{ pwError }}
+        </v-alert>
+
+        <v-form @submit.prevent="submitPasswordChange">
+          <v-text-field
+            v-model="pwForm.currentPassword"
+            label="ລະຫັດຜ່ານປັດຈຸບັນ"
+            type="password"
+            prepend-inner-icon="mdi-lock-outline"
+            required
+            class="mb-2"
+          />
+          <v-text-field
+            v-model="pwForm.newPassword"
+            label="ລະຫັດຜ່ານໃໝ່ (ຢ່າງໜ້ອຍ 8 ຕົວອັກສອນ)"
+            type="password"
+            prepend-inner-icon="mdi-lock-plus-outline"
+            required
+            class="mb-2"
+          />
+          <v-text-field
+            v-model="pwForm.confirmPassword"
+            label="ຢືນຢັນລະຫັດຜ່ານໃໝ່"
+            type="password"
+            prepend-inner-icon="mdi-lock-check-outline"
+            required
+            class="mb-3"
+          />
+          <div class="d-flex justify-end ga-2">
+            <v-btn variant="text" size="small" @click="passwordDialogOpen = false">ຍົກເລີກ</v-btn>
+            <v-btn
+              type="submit"
+              color="primary"
+              variant="flat"
+              size="small"
+              :loading="savingPassword"
+              prepend-icon="mdi-content-save-check"
+            >
+              ບັນທຶກລະຫັດຜ່ານໃໝ່
+            </v-btn>
+          </div>
+        </v-form>
       </v-card>
     </v-dialog>
 
@@ -528,6 +619,43 @@ registerAdSenseHead()
 const installDialogOpen = ref(false)
 const showInstallButton = ref(false)
 const mobileMenuOpen = ref(false)
+const passwordDialogOpen = ref(false)
+const savingPassword = ref(false)
+const pwError = ref('')
+const pwForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+})
+
+function openPasswordDialog() {
+  pwError.value = ''
+  pwForm.currentPassword = ''
+  pwForm.newPassword = ''
+  pwForm.confirmPassword = ''
+  passwordDialogOpen.value = true
+}
+
+async function submitPasswordChange() {
+  pwError.value = ''
+  if (pwForm.newPassword.length < 8) {
+    pwError.value = 'ລະຫັດຜ່ານໃໝ່ຕ້ອງມີຢ່າງໜ້ອຍ 8 ຕົວອັກສອນ.'
+    return
+  }
+  if (pwForm.newPassword !== pwForm.confirmPassword) {
+    pwError.value = 'ລະຫັດຜ່ານໃໝ່ ແລະ ຢືນຢັນລະຫັດຜ່ານບໍ່ກົງກັນ.'
+    return
+  }
+  savingPassword.value = true
+  try {
+    await authStore.changePassword(pwForm.currentPassword, pwForm.newPassword)
+    passwordDialogOpen.value = false
+  } catch (err: any) {
+    pwError.value = err?.data?.detail || 'ປ່ຽນລະຫັດຜ່ານບໍ່ສຳເລັດ.'
+  } finally {
+    savingPassword.value = false
+  }
+}
 
 const isDark = computed(() => theme.global.current.value.dark)
 
