@@ -302,6 +302,18 @@ async function saveEditedShop() {
   }
 }
 
+async function confirmDeleteDraftShop(shop: ShopOut) {
+  deletingId.value = shop.id
+  try {
+    await shopsStore.deleteShop(shop.id)
+    authStore.showToast(`ລຶບຮ້ານ "${shop.name}" ແລ້ວ.`, 'info', 'mdi-delete-check-outline')
+  } catch (err: any) {
+    authStore.showToast(err?.data?.detail || 'ລຶບຮ້ານບໍ່ສຳເລັດ.', 'error')
+  } finally {
+    deletingId.value = null
+  }
+}
+
 onMounted(async () => {
   await authStore.initAuth()
   if (shopsStore.categories.length === 0) {
