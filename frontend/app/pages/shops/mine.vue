@@ -94,7 +94,7 @@
               </div>
             </div>
 
-            <div class="d-flex justify-end ga-2 pt-2 mt-2 border-t">
+            <div class="d-flex flex-wrap justify-end ga-2 pt-2 mt-2 border-t">
               <v-btn
                 v-if="shop.status === 'APPROVED'"
                 to="/"
@@ -106,6 +106,27 @@
                 ເບິ່ງແຜນທີ່
               </v-btn>
               <v-btn
+                v-if="shop.status === 'PENDING' || shop.status === 'REJECTED'"
+                variant="text"
+                color="error"
+                size="small"
+                prepend-icon="mdi-delete-outline"
+                :loading="deletingId === shop.id"
+                @click="confirmDeleteDraftShop(shop)"
+              >
+                ລຶບຮ້ານ
+              </v-btn>
+              <v-chip
+                v-if="shop.status === 'SUSPENDED' && !authStore.isAdmin"
+                color="error"
+                variant="tonal"
+                size="small"
+                prepend-icon="mdi-lock-outline"
+              >
+                ຖືກລະງັບໂດຍຜູ້ດູແລ
+              </v-chip>
+              <v-btn
+                v-else
                 variant="tonal"
                 color="primary"
                 size="small"
@@ -218,6 +239,7 @@ const shopsStore = useShopsStore()
 
 const editDialog = ref(false)
 const savingEdit = ref(false)
+const deletingId = ref<number | null>(null)
 const editingShop = ref<ShopOut | null>(null)
 
 const editForm = reactive({

@@ -43,10 +43,10 @@
         <span class="sw-gdn-corner-label">ໂຄສະນາ • AdSense</span>
 
         <NuxtLink
-          v-if="authStore.isAdmin"
+          v-if="authStore.isSuperAdmin"
           to="/admin/approvals?tab=ADSENSE"
           class="sw-gdn-corner-btn text-decoration-none"
-          title="ຕັ້ງຄ່າ Google AdSense"
+          title="ຕັ້ງຄ່າ Google AdSense (Super Admin)"
         >
           ⚙
         </NuxtLink>

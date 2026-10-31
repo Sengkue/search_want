@@ -170,10 +170,10 @@ const regForm = reactive({
 })
 
 function redirectAfterAuth(role: string) {
-  const redir = typeof route.query.redirect === 'string' ? route.query.redirect : null
-  if (redir) {
+  const redir = route.query.redirect
+  if (isSafeInternalPath(redir) && redir !== '/login') {
     router.push(redir)
-  } else if (role === 'ADMIN') {
+  } else if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
     router.push('/admin/approvals')
   } else {
     router.push('/')

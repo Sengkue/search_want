@@ -292,7 +292,7 @@
             ບໍ່ມີຮ້ານທີ່ອະນຸມັດແລ້ວໃນໄລຍະນີ້
           </div>
           <p class="text-body-small text-medium-emphasis mb-3">
-            ລອງຂະຫຍາຍໄລຍະທາງເປັນທຸກໄລຍະທາງ ຫຼື ສ້າງຮ້ານທົດລອງອ້ອມຕຳແໜ່ງຂອງທ່ານເພື່ອທົດສອບ.
+            ລອງຂະຫຍາຍໄລຍະທາງເປັນທຸກໄລຍະທາງ ຫຼື ເລືອກໝວດໝູ່ບໍລິການອື່ນ.
           </p>
           <div class="d-flex flex-wrap justify-center ga-2">
             <v-btn
@@ -305,13 +305,14 @@
               ສະແດງທຸກໄລຍະທາງ
             </v-btn>
             <v-btn
+              v-if="authStore.publicConfig.demo_mode && authStore.isAdmin"
               color="secondary"
               variant="tonal"
               size="small"
               prepend-icon="mdi-magic-staff"
               @click="shopsStore.seedDemoShopsNearCurrentLocation()"
             >
-              ສ້າງຮ້ານທົດລອງໃກ້ຂ້ອຍ
+              ສ້າງຮ້ານທົດລອງໃກ້ຂ້ອຍ (Admin)
             </v-btn>
           </div>
         </v-card>
