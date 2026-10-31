@@ -271,3 +271,79 @@ def test_mobile_apk_download_endpoints(client: TestClient) -> None:
         assert "Search-Want.apk" in dl.headers.get("content-disposition", "")
 
 
+def test_adsense_config_admin_update_and_ads_txt(client: TestClient) -> None:
+    # 1. Public default AdSense config starts enabled in test_mode
+    initial = client.get("/api/adsense/config")
+    assert initial.status_code == 200
+    cfg = initial.json()
+    assert cfg["enabled"] is True
+    assert cfg["test_mode"] is True
+    assert cfg["client_id"] == ""
+
+    # Default /ads.txt returns guidance comment when Publisher ID is unset
+    ads_txt_before = client.get("/ads.txt")
+    assert ads_txt_before.status_code == 200
+    assert ads_txt_before.text.startswith("#")
+
+    # 2. Non-admin cannot modify AdSense settings
+    reg = client.post(
+        "/api/auth/register",
+        json={
+            "email": "regular_viewer@example.com",
+            "password": "password123",
+            "full_name": "Regular Viewer",
+        },
+    )
+    user_headers = {"Authorization": f"Bearer {reg.json()['access_token']}"}
+    forbidden = client.put(
+        "/api/admin/adsense",
+        headers=user_headers,
+        json={"enabled": False},
+    )
+    assert forbidden.status_code == 403
+
+    # 3. Admin logs in, validates invalid ID gets 422, then saves valid Publisher ID & Slots
+    admin_login = client.post(
+        "/api/auth/login",
+        json={"email": "admin@searchwant.com", "password": "admin123"},
+    )
+    admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
+
+    bad_resp = client.put(
+        "/api/admin/adsense",
+        headers=admin_headers,
+        json={"client_id": "invalid-pub-id"},
+    )
+    assert bad_resp.status_code == 422
+
+    # Supports short pub-XXXXXXXXXXXXXXXX normalization to ca-pub-XXXXXXXXXXXXXXXX
+    update_resp = client.put(
+        "/api/admin/adsense",
+        headers=admin_headers,
+        json={
+            "enabled": True,
+            "client_id": "pub-1234567890123456",
+            "slot_infeed": "1122334455",
+            "slot_banner": "6677889900",
+            "auto_ads": True,
+            "test_mode": False,
+        },
+    )
+    assert update_resp.status_code == 200
+    updated = update_resp.json()
+    assert updated["client_id"] == "ca-pub-1234567890123456"
+    assert updated["publisher_id"] == "pub-1234567890123456"
+    assert updated["slot_infeed"] == "1122334455"
+    assert updated["slot_banner"] == "6677889900"
+    assert updated["test_mode"] is False
+
+    # 4. /ads.txt immediately reflects Google's official format
+    ads_txt_after = client.get("/ads.txt")
+    assert ads_txt_after.status_code == 200
+    assert (
+        ads_txt_after.text.strip()
+        == "google.com, pub-1234567890123456, DIRECT, f08c47fec0942fa0"
+    )
+
+
+
