@@ -276,9 +276,9 @@
               @focus-map="handleFocusOnMap"
             />
             <AdSenseSlot
-              v-if="idx === 1 || (idx > 1 && (idx - 1) % 6 === 0)"
+              v-if="idx === 0 || (idx > 0 && idx % 5 === 0)"
               placement="infeed"
-              :variant-index="Math.floor(idx / 6)"
+              :variant-index="Math.floor(idx / 5)"
               class="mb-2"
             />
           </template>
