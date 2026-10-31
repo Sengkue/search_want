@@ -1,6 +1,8 @@
 from datetime import datetime
 import re
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from app.core.permissions import get_permissions_for_role
 
 
 class UserRegister(BaseModel):
@@ -15,6 +17,11 @@ class UserLogin(BaseModel):
     password: str
 
 
+class PasswordChangeRequest(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -23,13 +30,27 @@ class UserOut(BaseModel):
     full_name: str
     phone: str | None = None
     role: str
+    is_active: bool = True
+    permissions: list[str] = Field(default_factory=list)
     created_at: datetime
+
+    @model_validator(mode="after")
+    def populate_role_permissions(self) -> "UserOut":
+        if not self.permissions:
+            self.permissions = get_permissions_for_role(self.role)
+        return self
 
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: UserOut
+
+
+class PublicSecurityConfigOut(BaseModel):
+    app_env: str
+    is_production: bool
+    demo_mode: bool
 
 
 class ProblemKeywordOut(BaseModel):
@@ -139,6 +160,50 @@ class AdminStatsOut(BaseModel):
     total_users: int
 
 
+class AdminUserOut(BaseModel):
+    id: int
+    email: str
+    full_name: str
+    phone: str | None = None
+    role: str
+    is_active: bool
+    shops_count: int = 0
+    is_demo_account: bool = False
+    created_at: datetime
+
+
+class AdminRoleUpdateRequest(BaseModel):
+    role: str = Field(..., pattern="^(USER|SHOP_OWNER|ADMIN|SUPER_ADMIN)$")
+
+
+class AdminStatusUpdateRequest(BaseModel):
+    is_active: bool
+
+
+class SecurityCheckItem(BaseModel):
+    key: str
+    label: str
+    passed: bool
+    severity: str  # "critical" | "warning" | "info"
+    recommendation: str
+
+
+class SecurityAuditOut(BaseModel):
+    app_env: str
+    is_production: bool
+    demo_mode: bool
+    enable_docs: bool
+    strong_secret_key: bool
+    cors_restricted: bool
+    adsense_live_mode: bool
+    weak_demo_accounts_count: int
+    super_admin_count: int
+    admin_count: int
+    shop_owner_count: int
+    user_count: int
+    checks: list[SecurityCheckItem]
+
+
 class SeedNearbyRequest(BaseModel):
     latitude: float = Field(..., ge=-90.0, le=90.0)
     longitude: float = Field(..., ge=-180.0, le=180.0)
@@ -207,5 +272,3 @@ class AdSenseConfigOut(BaseModel):
     test_mode: bool
     ads_txt_line: str
     updated_at: datetime
-
-

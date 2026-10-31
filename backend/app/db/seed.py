@@ -1,7 +1,15 @@
 from sqlalchemy.orm import Session
 
-from app.core.security import hash_password
+from app.core.config import settings
+from app.core.permissions import ROLE_SHOP_OWNER, ROLE_SUPER_ADMIN, ROLE_USER
+from app.core.security import hash_password, verify_password
 from app.db.models import Category, Notification, ProblemKeyword, Shop, User
+
+DEMO_ACCOUNT_DEFAULTS: dict[str, tuple[str, str, str, str]] = {
+    "admin@searchwant.com": ("admin123", "ຜູ້ດູແລລະບົບ", "+856 20 5500 0001", ROLE_SUPER_ADMIN),
+    "owner@searchwant.com": ("owner123", "ສົມໃຈ ເຈົ້າຂອງອູ່ລົດ", "+856 20 5560 1230", ROLE_SHOP_OWNER),
+    "user@searchwant.com": ("user123", "ບຸນມີ ຄົນຂັບລົດ", "+856 20 5911 2233", ROLE_USER),
+}
 
 # Default map center: Vientiane, Laos
 DEFAULT_CENTER_LAT = 17.9757
