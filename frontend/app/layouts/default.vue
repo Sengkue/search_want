@@ -487,11 +487,14 @@ import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
 const { isNativeApp } = useApi()
+const { loadAdSenseConfig, registerAdSenseHead } = useAdSense()
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
 const { roleLabel } = useLabels()
 const theme = useTheme()
+
+registerAdSenseHead()
 
 const installDialogOpen = ref(false)
 const showInstallButton = ref(false)
@@ -538,6 +541,7 @@ function handleLogout() {
 
 onMounted(() => {
   authStore.initAuth()
+  loadAdSenseConfig()
   const standalone =
     window.matchMedia?.('(display-mode: standalone)').matches ||
     Boolean((window.navigator as any)?.standalone)
