@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
 from app.db.database import Base, SessionLocal, engine
 from app.db.seed import seed_initial_data
-from app.routers import admin, auth, categories, notifications, shops
+from app.routers import admin, adsense, auth, categories, notifications, shops
 
 
 @asynccontextmanager
@@ -98,6 +98,7 @@ app.include_router(categories.router)
 app.include_router(shops.router)
 app.include_router(admin.router)
 app.include_router(notifications.router)
+app.include_router(adsense.router)
 
 
 @app.get("/api/health", tags=["Health"])
