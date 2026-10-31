@@ -144,6 +144,9 @@
       </div>
     </v-card>
 
+    <!-- Top Responsive Google AdSense Leaderboard Banner (Immediately visible above the fold) -->
+    <AdSenseSlot placement="banner" :variant-index="0" class="mb-3" />
+
     <!-- Smart Problem Diagnosis Banner (Shown cleanly when user searches a symptom/problem) -->
     <v-alert
       v-if="diagnosis && (shopsStore.problemQuery.trim() || diagnosis.matched_categories.length > 0)"
