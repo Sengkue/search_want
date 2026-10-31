@@ -46,7 +46,7 @@ if errorlevel 1 (
 
 :wait
 echo.
-timeout /t 60 2>nul
+timeout /t 5 2>nul
 if errorlevel 1 (
     for /l %%i in (60,-1,1) do (
         <nul set /p "=Waiting %%i seconds... "
