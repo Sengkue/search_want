@@ -12,6 +12,8 @@ _tmp_db_fd, _tmp_db_path = tempfile.mkstemp(suffix=".db")
 os.close(_tmp_db_fd)
 os.environ["SEARCH_WANT_DATABASE_URL"] = f"sqlite:///{_tmp_db_path}"
 
+from app.core.config import settings  # noqa: E402
+from app.core.ratelimit import reset_all_rate_limits  # noqa: E402
 from app.db.database import Base, get_db  # noqa: E402
 from app.db.seed import seed_initial_data  # noqa: E402
 from app.main import app  # noqa: E402
@@ -19,6 +21,7 @@ from app.main import app  # noqa: E402
 
 @pytest.fixture()
 def client() -> Generator[TestClient, None, None]:
+    reset_all_rate_limits()
     test_fd, test_path = tempfile.mkstemp(suffix=".db")
     os.close(test_fd)
     test_engine = create_engine(
@@ -242,12 +245,32 @@ def test_lao_language_problem_search(client: TestClient) -> None:
     assert car["name"] == "ສ້ອມແປງລົດ ແລະ ອູ່ລົດ"
 
 
-def test_seed_nearby_spawns_shops_around_custom_gps(client: TestClient) -> None:
-    # Test spawning demo shops around Tokyo coordinates (35.6762, 139.6503)
-    seed_resp = client.post(
-        "/api/shops/seed-nearby",
-        json={"latitude": 35.6762, "longitude": 139.6503, "area_name": "Tokyo Test"},
+def test_seed_nearby_requires_admin_and_blocks_production(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload = {"latitude": 35.6762, "longitude": 139.6503, "area_name": "Tokyo Test"}
+
+    # 1. Anonymous visitor cannot pollute database with demo shops
+    anon_resp = client.post("/api/shops/seed-nearby", json=payload)
+    assert anon_resp.status_code == 401
+
+    # 2. Regular customer cannot seed demo shops
+    user_login = client.post(
+        "/api/auth/login",
+        json={"email": "user@searchwant.com", "password": "user123"},
     )
+    user_headers = {"Authorization": f"Bearer {user_login.json()['access_token']}"}
+    user_resp = client.post("/api/shops/seed-nearby", headers=user_headers, json=payload)
+    assert user_resp.status_code == 403
+
+    # 3. Admin/Super Admin can seed demo shops ONLY when DEMO_MODE is True
+    admin_login = client.post(
+        "/api/auth/login",
+        json={"email": "admin@searchwant.com", "password": "admin123"},
+    )
+    admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
+
+    seed_resp = client.post("/api/shops/seed-nearby", headers=admin_headers, json=payload)
     assert seed_resp.status_code == 200
     assert seed_resp.json()["created_count"] >= 7
 
@@ -256,6 +279,11 @@ def test_seed_nearby_spawns_shops_around_custom_gps(client: TestClient) -> None:
         params={"problem": "flat tire", "lat": 35.6762, "lng": 139.6503, "radius_km": 10},
     ).json()
     assert nearby_tokyo["total_found"] >= 1
+
+    # 4. In Production (DEMO_MODE=False), even Super Admin is blocked from injecting fake demo shops
+    monkeypatch.setattr(settings, "DEMO_MODE", False)
+    prod_seed = client.post("/api/shops/seed-nearby", headers=admin_headers, json=payload)
+    assert prod_seed.status_code == 403
 
 
 def test_mobile_apk_download_endpoints(client: TestClient) -> None:
