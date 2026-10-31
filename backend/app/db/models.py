@@ -19,6 +19,8 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(150), nullable=False)
     phone: Mapped[str | None] = mapped_column(String(60), nullable=True)
     role: Mapped[str] = mapped_column(String(30), default="USER", nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    token_version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     shops: Mapped[list["Shop"]] = relationship(
