@@ -90,3 +90,16 @@ def get_ads_txt(db: Session = Depends(get_db)) -> PlainTextResponse:
     cfg = serialize_adsense_setting(row)
     return PlainTextResponse(content=f"{cfg.ads_txt_line}\n", media_type="text/plain; charset=utf-8")
 
+
+@router.get("/robots.txt", response_class=PlainTextResponse)
+def get_robots_txt() -> PlainTextResponse:
+    content = (
+        "User-agent: Mediapartners-Google\n"
+        "Allow: /\n\n"
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+    )
+    return PlainTextResponse(content=content, media_type="text/plain; charset=utf-8")
+
+
