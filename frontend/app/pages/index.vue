@@ -263,16 +263,22 @@
         />
 
         <template v-if="nearbyShops.length > 0">
-          <ShopCard
-            v-for="shop in nearbyShops"
-            :key="shop.id"
-            :shop="shop"
-            :selected="shop.id === shopsStore.selectedShopId"
-            :user-lat="shopsStore.userLat"
-            :user-lng="shopsStore.userLng"
-            @select="handleSelectShop"
-            @focus-map="handleFocusOnMap"
-          />
+          <template v-for="(shop, idx) in nearbyShops" :key="shop.id">
+            <ShopCard
+              :shop="shop"
+              :selected="shop.id === shopsStore.selectedShopId"
+              :user-lat="shopsStore.userLat"
+              :user-lng="shopsStore.userLng"
+              @select="handleSelectShop"
+              @focus-map="handleFocusOnMap"
+            />
+            <AdSenseSlot
+              v-if="idx === 1 || (idx > 1 && (idx - 1) % 6 === 0)"
+              placement="infeed"
+              :variant-index="Math.floor(idx / 6)"
+              class="mb-2"
+            />
+          </template>
         </template>
 
         <v-card v-else-if="!shopsStore.loadingNearby" class="pa-5 text-center">
@@ -308,6 +314,9 @@
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- Bottom Responsive Google AdSense Banner -->
+    <AdSenseSlot placement="banner" class="mt-3" />
   </v-container>
 </template>
 

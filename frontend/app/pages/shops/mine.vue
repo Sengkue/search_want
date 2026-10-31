@@ -133,6 +133,9 @@
       </v-card>
     </template>
 
+    <!-- Responsive Google AdSense Banner for Public/Owner Directory Footer -->
+    <AdSenseSlot placement="banner" class="mt-4" />
+
     <!-- Edit & Resubmit Dialog -->
     <v-dialog v-model="editDialog" max-width="680" scrollable>
       <v-card v-if="editingShop" class="pa-4 pa-md-5">
