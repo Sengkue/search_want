@@ -22,6 +22,9 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '',
       httpsPort: process.env.NUXT_PUBLIC_HTTPS_PORT || '3443',
+      adsenseClientId: process.env.NUXT_PUBLIC_ADSENSE_CLIENT_ID || '',
+      adsenseSlotInfeed: process.env.NUXT_PUBLIC_ADSENSE_SLOT_INFEED || '',
+      adsenseSlotBanner: process.env.NUXT_PUBLIC_ADSENSE_SLOT_BANNER || '',
     },
   },
 
@@ -31,10 +34,17 @@ export default defineNuxtConfig({
         target: 'http://127.0.0.1:8000/api',
         changeOrigin: true,
       },
+      '/ads.txt': {
+        target: 'http://127.0.0.1:8000/ads.txt',
+        changeOrigin: true,
+      },
     },
     routeRules: {
       '/api/**': {
         proxy: 'http://127.0.0.1:8000/api/**',
+      },
+      '/ads.txt': {
+        proxy: 'http://127.0.0.1:8000/ads.txt',
       },
     },
   },

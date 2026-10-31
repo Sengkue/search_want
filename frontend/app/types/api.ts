@@ -117,3 +117,25 @@ export interface NotificationOut {
   created_at: string
 }
 
+export interface AdSenseConfig {
+  enabled: boolean
+  client_id: string
+  publisher_id: string
+  slot_infeed: string
+  slot_banner: string
+  auto_ads: boolean
+  test_mode: boolean
+  ads_txt_line: string
+  updated_at: string
+}
+
+export interface AdSenseConfigPayload {
+  enabled: boolean
+  client_id: string
+  slot_infeed: string
+  slot_banner: string
+  auto_ads: boolean
+  test_mode: boolean
+}
+
+
