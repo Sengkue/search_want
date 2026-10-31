@@ -143,15 +143,48 @@
           variant="tonal"
           density="compact"
           rounded="lg"
-          class="mb-4 text-body-small"
+          class="mb-3 text-body-small"
         >
-          <div class="font-weight-bold mb-1">ວິທີເຊື່ອມຕໍ່ Google AdSense 3 ຂັ້ນຕອນງ່າຍໆ:</div>
+          <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-1">
+            <div class="font-weight-bold">ວິທີເຊື່ອມຕໍ່ Google AdSense 3 ຂັ້ນຕອນງ່າຍໆ:</div>
+            <v-btn
+              href="https://adsense.google.com/adsense/signup"
+              target="_blank"
+              rel="noopener"
+              color="primary"
+              variant="flat"
+              size="x-small"
+              prepend-icon="mdi-google"
+              append-icon="mdi-open-in-new"
+            >
+              ສະໝັກບັນຊີ Google AdSense
+            </v-btn>
+          </div>
           <ol class="pl-4 mb-0">
-            <li>ສະໝັກບັນຊີທີ່ <strong>google.com/adsense</strong> ແລ້ວສຳເນົາລະຫັດ <code>ca-pub-XXXXXXXXXXXXXXXX</code> ມາໃສ່ລຸ່ມນີ້.</li>
+            <li>ກົດປຸ່ມ <strong>ສະໝັກບັນຊີ Google AdSense</strong> ຂ້າງເທິງ (ຖ້າຍັງບໍ່ມີໂດເມນຈິງ ໃຫ້ຕິກ <em>"I don't have a site yet"</em>) ແລ້ວສຳເນົາລະຫັດ <code>ca-pub-XXXXXXXXXXXXXXXX</code> ມາໃສ່ລຸ່ມນີ້.</li>
             <li>ສ້າງໜ່ວຍໂຄສະນາ (Display / In-feed Ad Unit) ເພື່ອເອົາເລກ <strong>Slot ID</strong> ມາໃສ່ (ຫຼື ເປີດ Auto Ads).</li>
-            <li>ເມື່ອເວັບໄຊອອນລາຍເທິງໂດເມນຈິງ ແລະ Google ອະນຸມັດແລ້ວ ໃຫ້ປິດ <strong>ໂໝດທົດລອງ</strong> ເພື່ອສະແດງໂຄສະນາຈິງທັນທີ! (ໃນແອັບ APK ມືຖື ລະບົບຈະປິດ Web AdSense ອັດຕະໂນມັດຕາມກົດຂອງ Google).</li>
+            <li>ເມື່ອເວັບໄຊອອນລາຍເທິງໂດເມນຈິງ ແລະ Google ອະນຸມັດແລ້ວ ໃຫ້ປິດ <strong>ໂໝດທົດລອງ</strong> ເພື່ອສະແດງໂຄສະນາຈິງທັນທີ!</li>
           </ol>
         </v-alert>
+
+        <!-- 4-Point Google AdSense Approval Readiness Strip -->
+        <div class="d-flex flex-wrap align-center ga-2 mb-4">
+          <span class="text-body-small font-weight-bold text-medium-emphasis">
+            ຄວາມພ້ອມລະບົບຕາມກົດ Google AdSense:
+          </span>
+          <v-chip size="x-small" color="success" variant="tonal" prepend-icon="mdi-check-circle">
+            ສະຄຣິບ adsbygoogle.js &amp; Meta Tag
+          </v-chip>
+          <v-chip size="x-small" color="success" variant="tonal" prepend-icon="mdi-check-circle" href="/ads.txt" target="_blank">
+            ໄຟລ໌ /ads.txt
+          </v-chip>
+          <v-chip size="x-small" color="success" variant="tonal" prepend-icon="mdi-check-circle" href="/robots.txt" target="_blank">
+            ໄຟລ໌ /robots.txt (Mediapartners-Google)
+          </v-chip>
+          <v-chip size="x-small" color="success" variant="tonal" prepend-icon="mdi-check-circle" to="/privacy">
+            ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ (/privacy)
+          </v-chip>
+        </div>
 
         <v-form @submit.prevent="saveAdSenseSettings">
           <v-row density="compact" class="mb-2">
