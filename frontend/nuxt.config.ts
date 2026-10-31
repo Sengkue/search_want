@@ -22,7 +22,7 @@ export default defineNuxtConfig({
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE || '',
       httpsPort: process.env.NUXT_PUBLIC_HTTPS_PORT || '3443',
-      adsenseClientId: process.env.NUXT_PUBLIC_ADSENSE_CLIENT_ID || '',
+      adsenseClientId: process.env.NUXT_PUBLIC_ADSENSE_CLIENT_ID || 'ca-pub-4990570878383229',
       adsenseSlotInfeed: process.env.NUXT_PUBLIC_ADSENSE_SLOT_INFEED || '',
       adsenseSlotBanner: process.env.NUXT_PUBLIC_ADSENSE_SLOT_BANNER || '',
     },
