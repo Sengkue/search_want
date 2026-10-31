@@ -98,16 +98,261 @@
         <v-tab value="REJECTED">ຖືກປະຕິເສດ ({{ stats.rejected_count }})</v-tab>
         <v-tab value="ALL">ທັງໝົດ</v-tab>
         <v-tab value="LOGS">ປະຫວັດການອະນຸມັດ</v-tab>
-        <v-tab value="ADSENSE">
+        <v-tab v-if="authStore.isSuperAdmin" value="ADSENSE">
           <v-icon icon="mdi-bullhorn-outline" size="16" class="mr-1" />
           ໂຄສະນາ AdSense
+        </v-tab>
+        <v-tab v-if="authStore.isSuperAdmin" value="RBAC">
+          <v-icon icon="mdi-shield-crown-outline" size="16" class="mr-1" />
+          ສິດຜູ້ໃຊ້ &amp; Production
         </v-tab>
       </v-tabs>
 
       <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-3" />
 
-      <!-- Google AdSense Management Tab -->
-      <v-card v-if="activeFilter === 'ADSENSE'" class="pa-4 pa-md-5">
+      <!-- SUPER ADMIN ONLY: High-Level RBAC & Production Security Audit Tab -->
+      <div v-if="activeFilter === 'RBAC' && authStore.isSuperAdmin" class="d-flex flex-column ga-3">
+        <!-- 1. Production Security & Environment Readiness Card -->
+        <v-card class="pa-4 pa-md-5">
+          <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-3">
+            <div class="d-flex align-center ga-2">
+              <v-avatar color="deep-purple" size="36" rounded="lg" variant="tonal">
+                <v-icon icon="mdi-shield-lock-open-outline" size="20" />
+              </v-avatar>
+              <div>
+                <div class="text-title-medium font-weight-bold">
+                  ກວດສອບຄວາມປອດໄພກ່ອນຂຶ້ນ Production
+                </div>
+                <div class="text-body-small text-medium-emphasis">
+                  ສະຖານະການຕັ້ງຄ່າເຊີບເວີ, ບັນຊີທົດລອງ, ລະຫັດລັບ JWT ແລະ ການປ້ອງກັນຂໍ້ມູນ
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap align-center ga-2">
+              <v-chip
+                v-if="securityAudit"
+                :color="securityAudit.is_production ? 'success' : 'warning'"
+                variant="flat"
+                size="small"
+                class="font-weight-bold"
+                :prepend-icon="securityAudit.is_production ? 'mdi-server-security' : 'mdi-laptop'"
+              >
+                {{ securityAudit.is_production ? 'ໂໝດ PRODUCTION' : 'ໂໝດພັດທະນາ (DEVELOPMENT)' }}
+              </v-chip>
+
+              <v-btn
+                v-if="securityAudit && securityAudit.weak_demo_accounts_count > 0"
+                color="error"
+                variant="tonal"
+                size="small"
+                prepend-icon="mdi-account-lock-outline"
+                :loading="disablingDemoAccounts"
+                @click="disableOtherWeakDemoAccounts"
+              >
+                ລະງັບບັນຊີທົດລອງອື່ນ ({{ securityAudit.weak_demo_accounts_count }})
+              </v-btn>
+            </div>
+          </div>
+
+          <v-row v-if="securityAudit" density="compact">
+            <v-col
+              v-for="chk in securityAudit.checks"
+              :key="chk.key"
+              cols="12"
+              md="6"
+            >
+              <v-sheet
+                rounded="lg"
+                border
+                class="pa-3 h-100 d-flex align-start ga-2"
+              >
+                <v-icon
+                  :icon="chk.passed ? 'mdi-check-circle' : chk.severity === 'critical' ? 'mdi-alert-octagon' : 'mdi-information-outline'"
+                  :color="chk.passed ? 'success' : chk.severity === 'critical' ? 'warning' : 'info'"
+                  size="20"
+                  class="mt-1 flex-shrink-0"
+                />
+                <div style="min-width: 0">
+                  <div class="text-body-small font-weight-bold">
+                    {{ chk.label }}
+                  </div>
+                  <div v-if="!chk.passed" class="text-body-small text-medium-emphasis mt-1" style="font-size: 11.5px">
+                    {{ chk.recommendation }}
+                  </div>
+                  <div v-else class="text-body-small text-success mt-1" style="font-size: 11.5px">
+                    ຜ່ານເກນຄວາມປອດໄພແລ້ວ
+                  </div>
+                </div>
+              </v-sheet>
+            </v-col>
+          </v-row>
+        </v-card>
+
+        <!-- 2. 4-Tier High-Level Role Permission Matrix -->
+        <v-card class="pa-4 pa-md-5">
+          <div class="text-title-small font-weight-bold mb-2 d-flex align-center ga-1">
+            <v-icon icon="mdi-Account-key-outline" size="18" color="primary" class="d-none" />
+            <v-icon icon="mdi-badge-account-horizontal-outline" size="18" color="primary" />
+            <span>ໂຄງສ້າງການແບ່ງສິດລະດັບສູງ 4 ລະດັບ (Role Hierarchy)</span>
+          </div>
+          <v-row density="compact">
+            <v-col cols="12" sm="6" md="3">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-chip size="x-small" color="deep-purple" variant="flat" class="font-weight-bold text-white mb-1">
+                  ຜູ້ບໍລິຫານສູງສຸດ (SUPER_ADMIN)
+                </v-chip>
+                <div class="text-body-small text-medium-emphasis" style="font-size: 11.5px">
+                  ຈັດການທຸກສ່ວນ: ແຕ່ງຕັ້ງ/ຖອນສິດ Admin, ລະງັບບັນຊີ, ຕັ້ງຄ່າລາຍຮັບ Google AdSense &amp; /ads.txt ແລະ ອະນຸມັດຮ້ານ.
+                </div>
+              </v-sheet>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-chip size="x-small" color="warning" variant="flat" class="font-weight-bold mb-1">
+                  ຜູ້ດູແລອະນຸມັດຮ້ານ (ADMIN)
+                </v-chip>
+                <div class="text-body-small text-medium-emphasis" style="font-size: 11.5px">
+                  ກວດໝຸດແຜນທີ່, ກົດອະນຸມັດ/ປະຕິເສດ/ຢຸດຮ້ານຊົ່ວຄາວ (ບໍ່ສາມາດແກ້ໄຂລະຫັດ Google AdSense ຫຼື ປ່ຽນສິດຜູ້ໃຊ້).
+                </div>
+              </v-sheet>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-chip size="x-small" color="secondary" variant="tonal" class="font-weight-bold mb-1">
+                  ເຈົ້າຂອງຮ້ານ (SHOP_OWNER)
+                </v-chip>
+                <div class="text-body-small text-medium-emphasis" style="font-size: 11.5px">
+                  ເພີ່ມຮ້ານເອງ, ແກ້ໄຂສະເພາະຮ້ານຕົນເອງ (ຕ້ອງຜ່ານ Admin ກວດໃໝ່ທຸກຄັ້ງ) ແລະ ບໍ່ສາມາດແກ້ຮ້ານທີ່ຖືກລະງັບ.
+                </div>
+              </v-sheet>
+            </v-col>
+            <v-col cols="12" sm="6" md="3">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-chip size="x-small" color="primary" variant="tonal" class="font-weight-bold mb-1">
+                  ຜູ້ໃຊ້ທົ່ວໄປ (USER)
+                </v-chip>
+                <div class="text-body-small text-medium-emphasis" style="font-size: 11.5px">
+                  ຄົ້ນຫາຮ້ານທີ່ອະນຸມັດແລ້ວ, ຮັບການແຈ້ງເຕືອນ ແລະ ເລື່ອນເປັນເຈົ້າຂອງຮ້ານອັດຕະໂນມັດເມື່ອສົ່ງຮ້ານທຳອິດ.
+                </div>
+              </v-sheet>
+            </v-col>
+          </v-row>
+        </v-card>
+
+        <!-- 3. User Role & Account Status Management Table -->
+        <v-card class="pa-4 pa-md-5">
+          <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-3">
+            <div>
+              <div class="text-title-medium font-weight-bold">
+                ຈັດການບັນຊີຜູ້ໃຊ້ ແລະ ກຳນົດສິດ ({{ rbacUsers.length }})
+              </div>
+              <div class="text-body-small text-medium-emphasis">
+                ທຸກຄັ້ງທີ່ປ່ຽນສິດ ຫຼື ລະງັບບັນຊີ ລະບົບຈະຍົກເລີກ Token ເກົ່າຂອງຜູ້ໃຊ້ນັ້ນທັນທີ
+              </div>
+            </div>
+
+            <div class="d-flex flex-wrap align-center ga-2" style="min-width: 280px">
+              <v-text-field
+                v-model="userSearchQuery"
+                placeholder="ຄົ້ນຫາຊື່ ຫຼື ອີເມວ..."
+                prepend-inner-icon="mdi-magnify"
+                density="compact"
+                hide-details
+                clearable
+                style="min-width: 210px"
+                @keyup.enter="fetchRbacUsers"
+                @click:clear="userSearchQuery = ''; fetchRbacUsers()"
+              />
+              <v-btn
+                color="primary"
+                variant="tonal"
+                size="small"
+                prepend-icon="mdi-magnify"
+                @click="fetchRbacUsers"
+              >
+                ຄົ້ນຫາ
+              </v-btn>
+            </div>
+          </div>
+
+          <v-divider class="mb-2" />
+
+          <div class="d-flex flex-column ga-2">
+            <v-sheet
+              v-for="u in rbacUsers"
+              :key="u.id"
+              rounded="lg"
+              border
+              class="pa-3 d-flex flex-wrap align-center justify-space-between ga-3"
+              :class="!u.is_active ? 'opacity-70' : ''"
+            >
+              <div style="min-width: 200px; flex: 1">
+                <div class="d-flex flex-wrap align-center ga-1">
+                  <span class="font-weight-bold text-body-medium">{{ u.full_name }}</span>
+                  <v-chip
+                    v-if="u.id === authStore.user?.id"
+                    size="x-small"
+                    color="primary"
+                    variant="flat"
+                  >
+                    ບັນຊີຂອງທ່ານ
+                  </v-chip>
+                  <v-chip
+                    v-if="u.is_demo_account"
+                    size="x-small"
+                    color="warning"
+                    variant="tonal"
+                  >
+                    ບັນຊີທົດລອງ
+                  </v-chip>
+                  <v-chip
+                    v-if="!u.is_active"
+                    size="x-small"
+                    color="error"
+                    variant="flat"
+                  >
+                    ຖືກລະງັບແລ້ວ
+                  </v-chip>
+                </div>
+                <div class="text-body-small text-medium-emphasis">
+                  {{ u.email }} • ຮ້ານໃນບັນຊີ: <strong>{{ u.shops_count }}</strong> ຮ້ານ
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap align-center ga-2">
+                <v-select
+                  :model-value="u.role"
+                  :items="roleSelectOptions"
+                  item-title="title"
+                  item-value="value"
+                  label="ລະດັບສິດ"
+                  density="compact"
+                  hide-details
+                  style="width: 205px"
+                  :disabled="u.id === authStore.user?.id || updatingUserId === u.id"
+                  @update:model-value="(val) => changeUserRole(u, val)"
+                />
+
+                <v-btn
+                  :color="u.is_active ? 'error' : 'success'"
+                  variant="tonal"
+                  size="small"
+                  :prepend-icon="u.is_active ? 'mdi-account-cancel-outline' : 'mdi-account-check-outline'"
+                  :disabled="u.id === authStore.user?.id"
+                  :loading="updatingUserId === u.id"
+                  @click="toggleUserActiveStatus(u)"
+                >
+                  {{ u.is_active ? 'ລະງັບບັນຊີ' : 'ເປີດໃຊ້ງານ' }}
+                </v-btn>
+              </div>
+            </v-sheet>
+          </div>
+        </v-card>
+      </div>
+
+      <!-- Google AdSense Management Tab (SUPER ADMIN ONLY) -->
+      <v-card v-else-if="activeFilter === 'ADSENSE' && authStore.isSuperAdmin" class="pa-4 pa-md-5">
         <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-3">
           <div class="d-flex align-center ga-2">
             <v-avatar color="primary" size="36" rounded="lg" variant="tonal">
@@ -573,7 +818,14 @@
 </template>
 
 <script setup lang="ts">
-import type { AdminStatsOut, ApprovalLogOut, ShopOut } from '~/types/api'
+import type {
+  AdminStatsOut,
+  AdminUserOut,
+  ApprovalLogOut,
+  SecurityAuditOut,
+  ShopOut,
+  UserRole,
+} from '~/types/api'
 import { useAuthStore } from '~/stores/auth'
 import { useShopsStore } from '~/stores/shops'
 
@@ -587,7 +839,20 @@ const route = useRoute()
 const loading = ref(false)
 const savingAdSense = ref(false)
 const processingId = ref<number | null>(null)
-const activeFilter = ref<'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL' | 'LOGS' | 'ADSENSE'>('PENDING')
+const activeFilter = ref<'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL' | 'LOGS' | 'ADSENSE' | 'RBAC'>('PENDING')
+
+const rbacUsers = ref<AdminUserOut[]>([])
+const securityAudit = ref<SecurityAuditOut | null>(null)
+const userSearchQuery = ref('')
+const updatingUserId = ref<number | null>(null)
+const disablingDemoAccounts = ref(false)
+
+const roleSelectOptions: Array<{ title: string; value: UserRole }> = [
+  { title: 'ຜູ້ໃຊ້ທົ່ວໄປ (USER)', value: 'USER' },
+  { title: 'ເຈົ້າຂອງຮ້ານ (SHOP_OWNER)', value: 'SHOP_OWNER' },
+  { title: 'ຜູ້ດູແລອະນຸມັດຮ້ານ (ADMIN)', value: 'ADMIN' },
+  { title: 'ຜູ້ບໍລິຫານສູງສຸດ (SUPER_ADMIN)', value: 'SUPER_ADMIN' },
+]
 
 const adForm = reactive({
   enabled: true,
@@ -685,16 +950,97 @@ async function fetchStats() {
   Object.assign(stats, res)
 }
 
+async function fetchRbacUsers() {
+  if (!authStore.isSuperAdmin) return
+  rbacUsers.value = await apiFetch<AdminUserOut[]>('/api/admin/users', {
+    params: {
+      q: userSearchQuery.value?.trim() || undefined,
+    },
+  })
+}
+
+async function fetchSecurityAudit() {
+  if (!authStore.isSuperAdmin) return
+  securityAudit.value = await apiFetch<SecurityAuditOut>('/api/admin/security-audit')
+}
+
+async function changeUserRole(target: AdminUserOut, newRole: UserRole) {
+  if (!newRole || newRole === target.role) return
+  updatingUserId.value = target.id
+  try {
+    const updated = await apiFetch<AdminUserOut>(`/api/admin/users/${target.id}/role`, {
+      method: 'PATCH',
+      body: { role: newRole },
+    })
+    const idx = rbacUsers.value.findIndex((u) => u.id === target.id)
+    if (idx !== -1) rbacUsers.value[idx] = updated
+    await fetchSecurityAudit()
+    authStore.showToast(
+      `ອັບເດດສິດຂອງ "${target.full_name}" ຮຽບຮ້ອຍແລ້ວ!`,
+      'success',
+      'mdi-shield-account',
+    )
+  } catch (err: any) {
+    authStore.showToast(err?.data?.detail || 'ປ່ຽນສິດຜູ້ໃຊ້ບໍ່ສຳເລັດ.', 'error')
+  } finally {
+    updatingUserId.value = null
+  }
+}
+
+async function toggleUserActiveStatus(target: AdminUserOut) {
+  updatingUserId.value = target.id
+  try {
+    const updated = await apiFetch<AdminUserOut>(`/api/admin/users/${target.id}/status`, {
+      method: 'PATCH',
+      body: { is_active: !target.is_active },
+    })
+    const idx = rbacUsers.value.findIndex((u) => u.id === target.id)
+    if (idx !== -1) rbacUsers.value[idx] = updated
+    await fetchSecurityAudit()
+    authStore.showToast(
+      updated.is_active
+        ? `ເປີດໃຊ້ງານບັນຊີ "${target.full_name}" ຄືນແລ້ວ.`
+        : `ລະງັບບັນຊີ "${target.full_name}" ແລະ ຍົກເລີກເຊດຊັນທັນທີແລ້ວ.`,
+      updated.is_active ? 'success' : 'warning',
+    )
+  } catch (err: any) {
+    authStore.showToast(err?.data?.detail || 'ປ່ຽນສະຖານະບັນຊີບໍ່ສຳເລັດ.', 'error')
+  } finally {
+    updatingUserId.value = null
+  }
+}
+
+async function disableOtherWeakDemoAccounts() {
+  disablingDemoAccounts.value = true
+  try {
+    const res = await apiFetch<{ disabled_count: number; message: string }>(
+      '/api/admin/security/disable-demo-accounts',
+      { method: 'POST' },
+    )
+    authStore.showToast(res.message, 'success', 'mdi-shield-check')
+    await Promise.all([fetchRbacUsers(), fetchSecurityAudit()])
+  } catch (err: any) {
+    authStore.showToast(err?.data?.detail || 'ລະງັບບັນຊີທົດລອງບໍ່ສຳເລັດ.', 'error')
+  } finally {
+    disablingDemoAccounts.value = false
+  }
+}
+
 async function fetchShopsByFilter() {
   if (!authStore.isAdmin) return
   loading.value = true
   try {
-    if (activeFilter.value === 'ADSENSE') {
+    if (activeFilter.value === 'RBAC' && authStore.isSuperAdmin) {
+      await Promise.all([fetchSecurityAudit(), fetchRbacUsers()])
+    } else if (activeFilter.value === 'ADSENSE' && authStore.isSuperAdmin) {
       await loadAdSenseConfig(true)
       syncAdFormFromConfig()
     } else if (activeFilter.value === 'LOGS') {
       logs.value = await apiFetch<ApprovalLogOut[]>('/api/admin/logs')
     } else {
+      if (activeFilter.value === 'ADSENSE' || activeFilter.value === 'RBAC') {
+        activeFilter.value = 'PENDING'
+      }
       const statusParam = activeFilter.value === 'ALL' ? undefined : activeFilter.value
       adminShops.value = await apiFetch<ShopOut[]>('/api/admin/shops', {
         params: { status: statusParam },
@@ -780,14 +1126,27 @@ async function confirmRejectOrSuspend() {
   }
 }
 
+watch(
+  () => route.query.tab,
+  async (newTab) => {
+    if (!authStore.isSuperAdmin) return
+    if (newTab === 'ADSENSE' || newTab === 'RBAC') {
+      activeFilter.value = newTab
+      await fetchShopsByFilter()
+    }
+  },
+)
+
 onMounted(async () => {
   await authStore.initAuth()
-  if (route.query.tab === 'ADSENSE') {
-    activeFilter.value = 'ADSENSE'
+  if (authStore.isSuperAdmin && (route.query.tab === 'ADSENSE' || route.query.tab === 'RBAC')) {
+    activeFilter.value = route.query.tab
   }
   if (authStore.isAdmin) {
-    await loadAdSenseConfig(true)
-    syncAdFormFromConfig()
+    if (authStore.isSuperAdmin) {
+      await loadAdSenseConfig(true)
+      syncAdFormFromConfig()
+    }
     await refreshAll()
   }
 })
