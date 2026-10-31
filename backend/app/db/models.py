@@ -143,3 +143,19 @@ class Notification(Base):
 
     user: Mapped["User"] = relationship("User", back_populates="notifications")
 
+
+class AdSenseSetting(Base):
+    __tablename__ = "adsense_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    client_id: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    slot_infeed: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    slot_banner: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    auto_ads: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    test_mode: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+

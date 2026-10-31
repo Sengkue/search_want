@@ -14,6 +14,9 @@ class Settings:
         "SEARCH_WANT_DATABASE_URL",
         "postgresql+psycopg2://postgres:postgres@localhost:5432/search_want",
     )
+    ADSENSE_CLIENT_ID: str = os.getenv("SEARCH_WANT_ADSENSE_CLIENT_ID", "")
+    ADSENSE_SLOT_INFEED: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_INFEED", "")
+    ADSENSE_SLOT_BANNER: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_BANNER", "")
 
 
 settings = Settings()
