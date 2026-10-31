@@ -16,6 +16,9 @@ A full-stack, responsive (**Mobile + Desktop**) web application built with **Nux
 4. **Adaptive Mobile & Desktop UX:**
    - **Mobile:** Thumb-friendly bottom navigation bar, map/list view switcher, 1-tap GPS & phone call buttons.
    - **Desktop:** Top navigation bar, sticky split-screen interactive map + scrollable shop cards, and multi-card Admin queue.
+5. **Google AdSense Monetization (`/admin/approvals?tab=ADSENSE` & `/ads.txt`):**
+   - Built-in **In-Feed** (after the 2nd shop card and every 6 cards) and **Responsive Footer Banner** AdSense units, plus `<meta name="google-adsense-account">` and Auto Ads script injection.
+   - Manage Publisher ID (`ca-pub-XXXXXXXXXXXXXXXX`), Slot IDs, Auto Ads, and **Preview / Test Mode** live from the Admin Console (`ໂຄສະນາ AdSense` tab) or via `.env` (`SEARCH_WANT_ADSENSE_CLIENT_ID`, `NUXT_PUBLIC_ADSENSE_CLIENT_ID`), with automatic dynamic `/ads.txt` generation and automatic suppression inside Capacitor native APKs, `/login`, and `/admin/*`.
 
 ---
 
