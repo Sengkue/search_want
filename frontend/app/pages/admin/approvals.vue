@@ -98,12 +98,208 @@
         <v-tab value="REJECTED">ຖືກປະຕິເສດ ({{ stats.rejected_count }})</v-tab>
         <v-tab value="ALL">ທັງໝົດ</v-tab>
         <v-tab value="LOGS">ປະຫວັດການອະນຸມັດ</v-tab>
+        <v-tab value="ADSENSE">
+          <v-icon icon="mdi-bullhorn-outline" size="16" class="mr-1" />
+          ໂຄສະນາ AdSense
+        </v-tab>
       </v-tabs>
 
       <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-3" />
 
+      <!-- Google AdSense Management Tab -->
+      <v-card v-if="activeFilter === 'ADSENSE'" class="pa-4 pa-md-5">
+        <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-3">
+          <div class="d-flex align-center ga-2">
+            <v-avatar color="primary" size="36" rounded="lg" variant="tonal">
+              <v-icon icon="mdi-google" size="19" />
+            </v-avatar>
+            <div>
+              <div class="text-title-medium font-weight-bold">ຕັ້ງຄ່າ Google AdSense</div>
+              <div class="text-body-small text-medium-emphasis">
+                ຈັດການລະຫັດ Publisher ID, Ad Slots ແລະ ໄຟລ໌ /ads.txt ສຳລັບສ້າງລາຍຮັບຈາກໂຄສະນາ
+              </div>
+            </div>
+          </div>
+
+          <v-chip
+            :color="!adForm.enabled ? 'default' : adForm.test_mode ? 'warning' : 'success'"
+            variant="tonal"
+            size="small"
+            class="font-weight-bold"
+            :prepend-icon="!adForm.enabled ? 'mdi-eye-off-outline' : adForm.test_mode ? 'mdi-flask-outline' : 'mdi-check-decagram'"
+          >
+            {{
+              !adForm.enabled
+                ? 'ປິດສະແດງໂຄສະນາຢູ່'
+                : adForm.test_mode
+                  ? 'ເປີດຢູ່ (ໂໝດທົດລອງ Preview)'
+                  : 'ເປີດສະແດງໂຄສະນາຈິງ'
+            }}
+          </v-chip>
+        </div>
+
+        <v-alert
+          type="info"
+          variant="tonal"
+          density="compact"
+          rounded="lg"
+          class="mb-4 text-body-small"
+        >
+          <div class="font-weight-bold mb-1">ວິທີເຊື່ອມຕໍ່ Google AdSense 3 ຂັ້ນຕອນງ່າຍໆ:</div>
+          <ol class="pl-4 mb-0">
+            <li>ສະໝັກບັນຊີທີ່ <strong>google.com/adsense</strong> ແລ້ວສຳເນົາລະຫັດ <code>ca-pub-XXXXXXXXXXXXXXXX</code> ມາໃສ່ລຸ່ມນີ້.</li>
+            <li>ສ້າງໜ່ວຍໂຄສະນາ (Display / In-feed Ad Unit) ເພື່ອເອົາເລກ <strong>Slot ID</strong> ມາໃສ່ (ຫຼື ເປີດ Auto Ads).</li>
+            <li>ເມື່ອເວັບໄຊອອນລາຍເທິງໂດເມນຈິງ ແລະ Google ອະນຸມັດແລ້ວ ໃຫ້ປິດ <strong>ໂໝດທົດລອງ</strong> ເພື່ອສະແດງໂຄສະນາຈິງທັນທີ! (ໃນແອັບ APK ມືຖື ລະບົບຈະປິດ Web AdSense ອັດຕະໂນມັດຕາມກົດຂອງ Google).</li>
+          </ol>
+        </v-alert>
+
+        <v-form @submit.prevent="saveAdSenseSettings">
+          <v-row density="compact" class="mb-2">
+            <v-col cols="12" md="4">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-switch
+                  v-model="adForm.enabled"
+                  color="success"
+                  density="compact"
+                  hide-details
+                  label="ເປີດໃຊ້ງານ Google AdSense"
+                  class="font-weight-bold"
+                />
+                <div class="text-body-small text-medium-emphasis mt-1">
+                  ເປີດ ຫຼື ປິດການສະແດງກ່ອງໂຄສະນາທັງໝົດໃນເວັບໄຊດ້ວຍປຸ່ມດຽວ
+                </div>
+              </v-sheet>
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-switch
+                  v-model="adForm.test_mode"
+                  color="warning"
+                  density="compact"
+                  hide-details
+                  label="ໂໝດທົດລອງ (Preview Mode)"
+                  class="font-weight-bold"
+                />
+                <div class="text-body-small text-medium-emphasis mt-1">
+                  ສະແດງຕົວຢ່າງກ່ອງໂຄສະນາໃນ localhost / LAN ກ່ອນໂດເມນຈິງອະນຸມັດ
+                </div>
+              </v-sheet>
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <v-sheet rounded="lg" border class="pa-3 h-100">
+                <v-switch
+                  v-model="adForm.auto_ads"
+                  color="primary"
+                  density="compact"
+                  hide-details
+                  label="ໂຄສະນາອັດຕະໂນມັດ (Auto Ads)"
+                  class="font-weight-bold"
+                />
+                <div class="text-body-small text-medium-emphasis mt-1">
+                  ໂຫຼດສະຄຣິບ AdSense ເພື່ອໃຫ້ Google ຈັດວາງໂຄສະນາອັດຕະໂນມັດ
+                </div>
+              </v-sheet>
+            </v-col>
+          </v-row>
+
+          <v-row density="compact" class="mt-1">
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="adForm.client_id"
+                label="ລະຫັດ Publisher ID"
+                placeholder="ca-pub-1234567890123456"
+                prepend-inner-icon="mdi-identifier"
+                hint="ຮູບແບບ: ca-pub- ຕາມດ້ວຍຕົວເລກ 16 ຫຼັກ (ປະວ່າງໄວ້ໄດ້ໃນໂໝດທົດລອງ)"
+                persistent-hint
+                clearable
+              />
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="adForm.slot_infeed"
+                label="In-Feed Ad Slot ID (ແຊກໃນລາຍການຮ້ານ)"
+                placeholder="1122334455"
+                prepend-inner-icon="mdi-view-Stream-outline"
+                hint="ສະແດງຫຼັງຮ້ານທີ 2 ແລະ ທຸກໆ 6 ຮ້ານ"
+                persistent-hint
+                clearable
+              />
+            </v-col>
+
+            <v-col cols="12" md="4">
+              <v-text-field
+                v-model="adForm.slot_banner"
+                label="Banner Ad Slot ID (ແບນເນີລຸ່ມໜ້າເວັບ)"
+                placeholder="6677889900"
+                prepend-inner-icon="mdi-page-layout-footer"
+                hint="ສະແດງຢູ່ສ່ວນລຸ່ມຂອງໜ້າຄົ້ນຫາ ແລະ ໜ້າຮ້ານຂອງຂ້ອຍ"
+                persistent-hint
+                clearable
+              />
+            </v-col>
+          </v-row>
+
+          <!-- Automatic /ads.txt Verification Line -->
+          <v-sheet rounded="lg" border class="pa-3 mt-3 bg-surface-light">
+            <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-1">
+              <div class="text-body-small font-weight-bold d-flex align-center ga-1">
+                <v-icon icon="mdi-file-check-outline" size="16" color="primary" />
+                <span>ໄຟລ໌ຢືນຢັນໂດເມນອັດຕະໂນມັດ (<code>/ads.txt</code>):</span>
+              </div>
+              <div class="d-flex ga-1">
+                <v-btn
+                  size="x-small"
+                  variant="tonal"
+                  color="primary"
+                  prepend-icon="mdi-content-copy"
+                  @click="copyAdsTxtLine"
+                >
+                  ສຳເນົາ
+                </v-btn>
+                <v-btn
+                  size="x-small"
+                  variant="text"
+                  color="primary"
+                  prepend-icon="mdi-open-in-new"
+                  href="/ads.txt"
+                  target="_blank"
+                >
+                  ເປີດ /ads.txt
+                </v-btn>
+              </div>
+            </div>
+            <code class="text-body-small d-block text-break">{{ previewAdsTxtLine }}</code>
+          </v-sheet>
+
+          <div class="d-flex flex-wrap justify-end ga-2 mt-4">
+            <v-btn
+              to="/"
+              variant="tonal"
+              color="secondary"
+              size="small"
+              prepend-icon="mdi-eye-outline"
+            >
+              ເບິ່ງຕຳແໜ່ງໂຄສະນາໜ້າຫຼັກ
+            </v-btn>
+            <v-btn
+              type="submit"
+              color="primary"
+              variant="flat"
+              size="small"
+              :loading="savingAdSense"
+              prepend-icon="mdi-content-save-check"
+            >
+              ບັນທຶກການຕັ້ງຄ່າ AdSense
+            </v-btn>
+          </div>
+        </v-form>
+      </v-card>
+
       <!-- Audit Logs Tab -->
-      <v-card v-if="activeFilter === 'LOGS'" class="pa-3 pa-md-4">
+      <v-card v-else-if="activeFilter === 'LOGS'" class="pa-3 pa-md-4">
         <div class="text-title-small font-weight-bold mb-2">ປະຫວັດການກວດສອບຫຼ້າສຸດ</div>
         <v-list v-if="logs.length > 0" density="compact" lines="two" class="py-0">
           <v-list-item v-for="log in logs" :key="log.id" class="px-1">
@@ -350,12 +546,79 @@ import { useShopsStore } from '~/stores/shops'
 
 const { apiFetch } = useApi()
 const { statusLabel, logActionLabel, formatDateTime } = useLabels()
+const { adsenseConfig, loadAdSenseConfig, updateAdSenseConfig } = useAdSense()
 const authStore = useAuthStore()
 const shopsStore = useShopsStore()
+const route = useRoute()
 
 const loading = ref(false)
+const savingAdSense = ref(false)
 const processingId = ref<number | null>(null)
-const activeFilter = ref<'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL' | 'LOGS'>('PENDING')
+const activeFilter = ref<'PENDING' | 'APPROVED' | 'REJECTED' | 'ALL' | 'LOGS' | 'ADSENSE'>('PENDING')
+
+const adForm = reactive({
+  enabled: true,
+  client_id: '',
+  slot_infeed: '',
+  slot_banner: '',
+  auto_ads: true,
+  test_mode: true,
+})
+
+const previewAdsTxtLine = computed(() => {
+  const raw = (adForm.client_id || '').trim()
+  const pubMatch = raw.match(/^(?:ca-)?(pub-\d{16})$/)
+  if (pubMatch) {
+    return `google.com, ${pubMatch[1]}, DIRECT, f08c47fec0942fa0`
+  }
+  return adsenseConfig.value.ads_txt_line || '# Configure Google AdSense Publisher ID (ca-pub-XXXXXXXXXXXXXXXX) in Search-Want Admin Console'
+})
+
+function syncAdFormFromConfig() {
+  adForm.enabled = adsenseConfig.value.enabled
+  adForm.client_id = adsenseConfig.value.client_id || ''
+  adForm.slot_infeed = adsenseConfig.value.slot_infeed || ''
+  adForm.slot_banner = adsenseConfig.value.slot_banner || ''
+  adForm.auto_ads = adsenseConfig.value.auto_ads
+  adForm.test_mode = adsenseConfig.value.test_mode
+}
+
+async function saveAdSenseSettings() {
+  savingAdSense.value = true
+  try {
+    await updateAdSenseConfig({
+      enabled: adForm.enabled,
+      client_id: (adForm.client_id || '').trim(),
+      slot_infeed: (adForm.slot_infeed || '').trim(),
+      slot_banner: (adForm.slot_banner || '').trim(),
+      auto_ads: adForm.auto_ads,
+      test_mode: adForm.test_mode,
+    })
+    syncAdFormFromConfig()
+    authStore.showToast(
+      'ບັນທຶກການຕັ້ງຄ່າ Google AdSense ສຳເລັດແລ້ວ!',
+      'success',
+      'mdi-check-decagram',
+    )
+  } catch (err: any) {
+    const detail = err?.data?.detail
+    const msg = Array.isArray(detail)
+      ? detail[0]?.msg || 'ຂໍ້ມູນລະຫັດ AdSense ບໍ່ຖືກຕ້ອງ.'
+      : detail || 'ບັນທຶກການຕັ້ງຄ່າ AdSense ບໍ່ສຳເລັດ.'
+    authStore.showToast(msg, 'error')
+  } finally {
+    savingAdSense.value = false
+  }
+}
+
+async function copyAdsTxtLine() {
+  try {
+    await navigator.clipboard.writeText(previewAdsTxtLine.value)
+    authStore.showToast('ສຳເນົາແຖວ ads.txt ແລ້ວ!', 'success', 'mdi-content-copy')
+  } catch {
+    authStore.showToast('ບໍ່ສາມາດສຳເນົາອັດຕະໂນມັດໄດ້ ກະລຸນາລາກເລືອກຂໍ້ຄວາມ.', 'warning')
+  }
+}
 
 const stats = reactive<AdminStatsOut>({
   pending_count: 0,
@@ -393,7 +656,10 @@ async function fetchShopsByFilter() {
   if (!authStore.isAdmin) return
   loading.value = true
   try {
-    if (activeFilter.value === 'LOGS') {
+    if (activeFilter.value === 'ADSENSE') {
+      await loadAdSenseConfig(true)
+      syncAdFormFromConfig()
+    } else if (activeFilter.value === 'LOGS') {
       logs.value = await apiFetch<ApprovalLogOut[]>('/api/admin/logs')
     } else {
       const statusParam = activeFilter.value === 'ALL' ? undefined : activeFilter.value
