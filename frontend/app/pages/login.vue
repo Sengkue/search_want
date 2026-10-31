@@ -100,50 +100,52 @@
         </v-btn>
       </v-form>
 
-      <!-- Tidy 1-Tap Demo Role Switcher Below Divider -->
-      <v-divider class="my-4" />
-      <div class="text-body-small text-medium-emphasis text-center mb-2">
-        <v-icon icon="mdi-lightning-bolt" size="14" color="warning" />
-        ທົດລອງເຂົ້າໃຊ້ດ່ວນດ້ວຍ 1 ຄລິກ:
-      </div>
-      <div class="d-flex flex-wrap justify-center ga-1">
-        <v-btn
-          size="small"
-          color="warning"
-          variant="tonal"
-          prepend-icon="mdi-shield-crown-outline"
-          :loading="demoLoading === 'admin'"
-          @click="quickDemoLogin('admin@searchwant.com', 'admin123', 'admin')"
-        >
-          ຜູ້ດູແລລະບົບ
-        </v-btn>
-        <v-btn
-          size="small"
-          color="secondary"
-          variant="tonal"
-          prepend-icon="mdi-store-outline"
-          :loading="demoLoading === 'owner'"
-          @click="quickDemoLogin('owner@searchwant.com', 'owner123', 'owner')"
-        >
-          ເຈົ້າຂອງຮ້ານ
-        </v-btn>
-        <v-btn
-          size="small"
-          color="primary"
-          variant="tonal"
-          prepend-icon="mdi-car-outline"
-          :loading="demoLoading === 'user'"
-          @click="quickDemoLogin('user@searchwant.com', 'user123', 'user')"
-        >
-          ລູກຄ້າ / ຄົນຂັບລົດ
-        </v-btn>
-      </div>
+      <!-- Tidy 1-Tap Demo Role Switcher (Automatically Hidden in Production / DEMO_MODE=false) -->
+      <template v-if="authStore.publicConfig.demo_mode">
+        <v-divider class="my-4" />
+        <div class="text-body-small text-medium-emphasis text-center mb-2">
+          <v-icon icon="mdi-lightning-bolt" size="14" color="warning" />
+          ທົດລອງເຂົ້າໃຊ້ດ່ວນດ້ວຍ 1 ຄລິກ (ໂໝດພັດທະນາ):
+        </div>
+        <div class="d-flex flex-wrap justify-center ga-1">
+          <v-btn
+            size="small"
+            color="warning"
+            variant="tonal"
+            prepend-icon="mdi-shield-crown-outline"
+            :loading="demoLoading === 'admin'"
+            @click="quickDemoLogin('admin@searchwant.com', 'admin123', 'admin')"
+          >
+            ຜູ້ດູແລລະບົບ
+          </v-btn>
+          <v-btn
+            size="small"
+            color="secondary"
+            variant="tonal"
+            prepend-icon="mdi-store-outline"
+            :loading="demoLoading === 'owner'"
+            @click="quickDemoLogin('owner@searchwant.com', 'owner123', 'owner')"
+          >
+            ເຈົ້າຂອງຮ້ານ
+          </v-btn>
+          <v-btn
+            size="small"
+            color="primary"
+            variant="tonal"
+            prepend-icon="mdi-car-outline"
+            :loading="demoLoading === 'user'"
+            @click="quickDemoLogin('user@searchwant.com', 'user123', 'user')"
+          >
+            ລູກຄ້າ / ຄົນຂັບລົດ
+          </v-btn>
+        </div>
+      </template>
     </v-card>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth'
+import { isSafeInternalPath, useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()

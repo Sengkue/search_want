@@ -168,6 +168,13 @@ export const useShopsStore = defineStore('shops', () => {
     return updated
   }
 
+  async function deleteShop(shopId: number): Promise<void> {
+    await apiFetch(`/api/shops/${shopId}`, {
+      method: 'DELETE',
+    })
+    myShops.value = myShops.value.filter((s) => s.id !== shopId)
+  }
+
   async function fetchMyShops() {
     loadingMyShops.value = true
     try {
@@ -201,6 +208,7 @@ export const useShopsStore = defineStore('shops', () => {
     seedDemoShopsNearCurrentLocation,
     submitShop,
     updateShop,
+    deleteShop,
     fetchMyShops,
   }
 })
