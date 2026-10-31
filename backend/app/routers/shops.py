@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 
-from app.core.deps import get_current_user, get_optional_user
+from app.core.config import settings
+from app.core.deps import get_current_user, get_optional_user, require_admin
+from app.core.permissions import ADMIN_ROLES, ROLE_SHOP_OWNER, ROLE_SUPER_ADMIN, ROLE_USER
 from app.db.database import get_db
 from app.db.models import ApprovalLog, Category, Notification, Shop, User
 from app.db.seed import seed_shops_around_coordinates
@@ -103,10 +105,16 @@ def search_nearby_shops(
             )
     else:
         if has_gps and effective_radius is not None:
-            diagnosis.notification_summary = (
-                f"ບໍ່ພົບຮ້ານທີ່ອະນຸມັດແລ້ວ ແລະ ກົງກັບບັນຫາພາຍໃນ {effective_radius:g} ກມ. "
-                "ລອງຂະຫຍາຍໄລຍະທາງ ຫຼື ກົດ 'ສ້າງຮ້ານທົດລອງໃກ້ຂ້ອຍ' ເພື່ອທົດສອບໃນພື້ນທີ່ຂອງທ່ານ."
-            )
+            if settings.DEMO_MODE:
+                diagnosis.notification_summary = (
+                    f"ບໍ່ພົບຮ້ານທີ່ອະນຸມັດແລ້ວ ແລະ ກົງກັບບັນຫາພາຍໃນ {effective_radius:g} ກມ. "
+                    "ລອງຂະຫຍາຍໄລຍະທາງ ຫຼື ເລືອກໝວດໝູ່ອື່ນ."
+                )
+            else:
+                diagnosis.notification_summary = (
+                    f"ບໍ່ພົບຮ້ານທີ່ອະນຸມັດແລ້ວ ແລະ ກົງກັບບັນຫາພາຍໃນ {effective_radius:g} ກມ. "
+                    "ລອງຂະຫຍາຍໄລຍະທາງເປັນທຸກໄລຍະທາງ ຫຼື ຄົ້ນຫາດ້ວຍຄຳອື່ນ."
+                )
         else:
             diagnosis.notification_summary = (
                 "ຍັງບໍ່ພົບຮ້ານທີ່ອະນຸມັດແລ້ວ ແລະ ກົງກັບເງື່ອນໄຂນີ້. ລອງໃຊ້ຄຳຄົ້ນຫາທີ່ກວ້າງຂຶ້ນ ຫຼື ເລືອກໝວດໝູ່ອື່ນ."
@@ -166,11 +174,15 @@ def submit_new_shop(
     )
     db.add(shop)
 
-    if current_user.role == "USER":
-        current_user.role = "SHOP_OWNER"
+    if current_user.role == ROLE_USER:
+        current_user.role = ROLE_SHOP_OWNER
 
-    # Notify all Admins to review & approve
-    admins = db.query(User).filter(User.role == "ADMIN").all()
+    # Notify all active Admins & Super Admins to review & approve
+    admins = (
+        db.query(User)
+        .filter(User.role.in_(ADMIN_ROLES), User.is_active.is_(True))
+        .all()
+    )
     for admin in admins:
         db.add(
             Notification(
@@ -214,10 +226,18 @@ def update_my_shop(
     if not shop:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ບໍ່ພົບຮ້ານນີ້.")
 
-    if shop.owner_id != current_user.id and current_user.role != "ADMIN":
+    is_admin_actor = current_user.role in ADMIN_ROLES
+    if shop.owner_id != current_user.id and not is_admin_actor:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="ທ່ານແກ້ໄຂໄດ້ສະເພາະຮ້ານຂອງທ່ານເອງ.",
+            detail="ທ່ານແກ້ໄຂໄດ້ສະເພາະຮ້ານຂອງທ່ານເອງເທົ່ານັ້ນ.",
+        )
+
+    # Prevent suspended shops from bypassing Admin suspension via self-edit
+    if not is_admin_actor and shop.status == "SUSPENDED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="ຮ້ານນີ້ຖືກຜູ້ດູແລລະບົບລະງັບຊົ່ວຄາວ ບໍ່ສາມາດແກ້ໄຂເອງໄດ້. ກະລຸນາຕິດຕໍ່ຜູ້ດູແລລະບົບ.",
         )
 
     category = db.query(Category).filter(Category.id == payload.category_id).first()
@@ -238,7 +258,7 @@ def update_my_shop(
     shop.opening_hours = payload.opening_hours.strip()
     shop.is_emergency_24h = payload.is_emergency_24h
 
-    if current_user.role != "ADMIN":
+    if not is_admin_actor:
         shop.status = "PENDING"
         shop.rejection_reason = None
 
@@ -250,7 +270,11 @@ def update_my_shop(
                 note="ເຈົ້າຂອງຮ້ານໄດ້ແກ້ໄຂລາຍລະອຽດ/ຕຳແໜ່ງຮ້ານ ແລະ ສົ່ງຂໍອະນຸມັດໃໝ່.",
             )
         )
-        admins = db.query(User).filter(User.role == "ADMIN").all()
+        admins = (
+            db.query(User)
+            .filter(User.role.in_(ADMIN_ROLES), User.is_active.is_(True))
+            .all()
+        )
         for admin in admins:
             db.add(
                 Notification(
@@ -267,15 +291,50 @@ def update_my_shop(
     return shop_to_out(shop)
 
 
+@router.delete("/{shop_id}")
+def delete_shop(
+    shop_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict[str, str | int]:
+    shop = db.query(Shop).filter(Shop.id == shop_id).first()
+    if not shop:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ບໍ່ພົບຮ້ານນີ້.")
+
+    is_super = current_user.role == ROLE_SUPER_ADMIN
+    is_owner = shop.owner_id == current_user.id
+
+    if not is_super and not is_owner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="ທ່ານບໍ່ມີສິດລຶບຮ້ານນີ້.",
+        )
+
+    if is_owner and not is_super and shop.status not in ("PENDING", "REJECTED"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="ຮ້ານທີ່ເປີດໃຊ້ງານແລ້ວ ຫຼື ຖືກລະງັບ ບໍ່ສາມາດລຶບເອງໄດ້ ກະລຸນາຕິດຕໍ່ຜູ້ບໍລິຫານລະບົບ.",
+        )
+
+    deleted_name = shop.name
+    db.delete(shop)
+    db.commit()
+    return {"deleted_id": shop_id, "message": f"ລຶບຮ້ານ '{deleted_name}' ຮຽບຮ້ອຍແລ້ວ."}
+
+
 @router.post("/seed-nearby")
 def seed_demo_shops_near_user(
     payload: SeedNearbyRequest,
+    admin_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> dict[str, int | str]:
-    owner = db.query(User).filter(User.email == "owner@searchwant.com").first()
-    admin = db.query(User).filter(User.role == "ADMIN").first()
-    if not owner:
-        raise HTTPException(status_code=500, detail="ບໍ່ພົບບັນຊີເຈົ້າຂອງຮ້ານທົດລອງ.")
+    if not settings.DEMO_MODE:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="ປິດການສ້າງຂໍ້ມູນຮ້ານທົດລອງໃນໂໝດ Production ແລ້ວ.",
+        )
+
+    owner = db.query(User).filter(User.email == "owner@searchwant.com").first() or admin_user
 
     area_tag = f"{payload.area_name.strip()} {round(payload.latitude, 2)},{round(payload.longitude, 2)}"
     created = seed_shops_around_coordinates(
@@ -284,7 +343,7 @@ def seed_demo_shops_near_user(
         center_lng=payload.longitude,
         area_name=area_tag,
         owner=owner,
-        admin=admin,
+        admin=admin_user,
     )
     return {
         "created_count": created,
@@ -312,11 +371,12 @@ def get_shop_detail(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ບໍ່ພົບຮ້ານນີ້.")
 
     if shop.status != "APPROVED":
-        if not current_user or (current_user.id != shop.owner_id and current_user.role != "ADMIN"):
+        if not current_user or (
+            current_user.id != shop.owner_id and current_user.role not in ADMIN_ROLES
+        ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="ຮ້ານນີ້ກຳລັງລໍຖ້າການອະນຸມັດຈາກຜູ້ດູແລລະບົບ.",
             )
 
     return shop_to_out(shop)
-

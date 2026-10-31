@@ -1,22 +1,24 @@
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
-from app.db.database import Base, SessionLocal, engine
+from app.db.database import Base, SessionLocal, engine, ensure_schema_upgrades
 from app.db.seed import seed_initial_data
 from app.routers import admin, adsense, auth, categories, notifications, shops
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
+    settings.validate_production_settings()
     Base.metadata.create_all(bind=engine)
+    ensure_schema_upgrades(engine)
     db = SessionLocal()
     try:
         seed_initial_data(db)
@@ -30,12 +32,30 @@ app = FastAPI(
     version=settings.APP_VERSION,
     description=(
         "ແພລດຟອມຄົ້ນຫາຮ້ານໃກ້ຄຽງຈາກບັນຫາຂອງທ່ານ ແລະ ໄດເຣັກທໍຣີຮ້ານທີ່ເຈົ້າຂອງຮ້ານເພີ່ມເອງ "
-        "ພ້ອມຂະບວນການອະນຸມັດໂດຍຜູ້ດູແລລະບົບ."
+        "ພ້ອມຂະບວນການອະນຸມັດ ແລະ ການແບ່ງສິດລະດັບສູງ (RBAC)."
     ),
     docs_url=None,
     redoc_url=None,
     lifespan=lifespan,
 )
+
+
+@app.middleware("http")
+async def security_headers_and_docs_guard(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    # Block OpenAPI schema & Swagger/ReDoc enumeration when ENABLE_DOCS is False (Production default)
+    if not settings.ENABLE_DOCS and request.url.path in ("/docs", "/redoc", "/openapi.json"):
+        return JSONResponse(status_code=404, content={"detail": "Not Found"})
+
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(self)")
+    return response
+
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 if _STATIC_DIR.is_dir():
@@ -68,6 +88,8 @@ body, .swagger-ui, .swagger-ui *:not(code):not(pre) {
 
 @app.get("/docs", include_in_schema=False)
 def custom_swagger_ui_html() -> HTMLResponse:
+    if not settings.ENABLE_DOCS:
+        raise HTTPException(status_code=404, detail="Not Found")
     base = get_swagger_ui_html(
         openapi_url=app.openapi_url or "/openapi.json",
         title=f"{settings.APP_NAME} — API Docs",
@@ -78,6 +100,8 @@ def custom_swagger_ui_html() -> HTMLResponse:
 
 @app.get("/redoc", include_in_schema=False)
 def custom_redoc_html() -> HTMLResponse:
+    if not settings.ENABLE_DOCS:
+        raise HTTPException(status_code=404, detail="Not Found")
     base = get_redoc_html(
         openapi_url=app.openapi_url or "/openapi.json",
         title=f"{settings.APP_NAME} — ReDoc",
@@ -85,12 +109,13 @@ def custom_redoc_html() -> HTMLResponse:
     body = base.body.decode("utf-8").replace("</head>", f"{_LAO_FONT_STYLE}</head>")
     return HTMLResponse(content=body)
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 app.include_router(auth.router)
@@ -102,8 +127,13 @@ app.include_router(adsense.router)
 
 
 @app.get("/api/health", tags=["Health"])
-def health_check() -> dict[str, str]:
-    return {"status": "ok", "service": settings.APP_NAME, "version": settings.APP_VERSION}
+def health_check() -> dict[str, object]:
+    return {
+        "status": "ok",
+        "service": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "env": settings.APP_ENV,
+    }
 
 
 def _resolve_apk_path() -> Path | None:
@@ -162,5 +192,3 @@ def download_android_apk() -> FileResponse:
         media_type="application/vnd.android.package-archive",
         filename="Search-Want.apk",
     )
-
-
