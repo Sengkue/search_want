@@ -60,3 +60,4 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo(authStore.isAdmin ? '/admin/approvals' : '/')
   }
 })
+

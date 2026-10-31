@@ -54,3 +54,4 @@ def clear_rate_limit_key(bucket: str, key: str) -> None:
 def reset_all_rate_limits() -> None:
     with _lock:
         _buckets.clear()
+

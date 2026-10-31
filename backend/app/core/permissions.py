@@ -73,3 +73,4 @@ def get_permissions_for_role(role: str) -> list[str]:
 
 def has_permission(role: str, permission: str) -> bool:
     return permission in ROLE_PERMISSIONS.get(role, ())
+
