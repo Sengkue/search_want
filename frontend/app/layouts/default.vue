@@ -230,8 +230,21 @@
     </v-app-bar>
 
     <!-- Main Page Content (No top navbar offset on Mobile; clean bottom clearance for Mobile Footer) -->
-    <v-main :style="smAndDown ? 'padding-bottom: 68px' : ''">
+    <v-main :style="smAndDown ? 'padding-bottom: 72px' : ''">
       <slot />
+
+      <!-- Mandatory Google AdSense Policy Compliance Footer Link (Privacy & Cookie Disclosure) -->
+      <footer class="text-center py-3 px-3 text-body-small text-medium-emphasis" style="font-size: 11.5px">
+        <span>Search-Want</span>
+        <span class="mx-1">•</span>
+        <NuxtLink to="/privacy" class="text-primary text-decoration-none font-weight-medium">
+          ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ &amp; ໂຄສະນາ
+        </NuxtLink>
+        <span class="mx-1">•</span>
+        <a href="/ads.txt" target="_blank" class="text-medium-emphasis text-decoration-none">
+          ads.txt
+        </a>
+      </footer>
     </v-main>
 
     <!-- MOBILE ONLY Sleek Bottom Footer Bar (Replaces top navbar completely on phone screens) -->
