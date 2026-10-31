@@ -3,7 +3,7 @@ from fastapi.responses import PlainTextResponse
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.deps import require_admin
+from app.core.deps import require_super_admin
 from app.db.database import get_db
 from app.db.models import AdSenseSetting, User, utc_now
 from app.schemas.schemas import AdSenseConfigOut, AdSenseConfigUpdate
@@ -68,7 +68,7 @@ def get_adsense_config(db: Session = Depends(get_db)) -> AdSenseConfigOut:
 @router.put("/api/admin/adsense", response_model=AdSenseConfigOut)
 def update_adsense_config(
     payload: AdSenseConfigUpdate,
-    _admin: User = Depends(require_admin),
+    _super_admin: User = Depends(require_super_admin),
     db: Session = Depends(get_db),
 ) -> AdSenseConfigOut:
     row = get_or_create_adsense_setting(db)
