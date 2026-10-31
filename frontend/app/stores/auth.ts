@@ -1,5 +1,19 @@
 import { defineStore } from 'pinia'
-import type { NotificationOut, TokenResponse, UserOut } from '~/types/api'
+import type {
+  NotificationOut,
+  PublicSecurityConfig,
+  TokenResponse,
+  UserOut,
+} from '~/types/api'
+
+export function isSafeInternalPath(path: unknown): path is string {
+  return (
+    typeof path === 'string' &&
+    path.startsWith('/') &&
+    !path.startsWith('//') &&
+    !path.includes('://')
+  )
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const { apiFetch } = useApi()
@@ -8,6 +22,15 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(null)
   const notifications = ref<NotificationOut[]>([])
   const initialized = ref(false)
+  let initPromise: Promise<void> | null = null
+
+  // Runtime environment & production demo-gating flags fetched from backend
+  const publicConfig = reactive<PublicSecurityConfig>({
+    app_env: 'development',
+    is_production: false,
+    demo_mode: true,
+  })
+  const publicConfigLoaded = ref(false)
 
   // Global snackbar toast state for rich in-app notifications
   const toast = reactive({
@@ -17,9 +40,23 @@ export const useAuthStore = defineStore('auth', () => {
     icon: 'mdi-bell-ring-outline',
   })
 
-  const isLoggedIn = computed(() => Boolean(token.value && user.value))
-  const isAdmin = computed(() => user.value?.role === 'ADMIN')
+  const isLoggedIn = computed(() => Boolean(token.value && user.value && user.value.is_active !== false))
+  /** Both ADMIN (Moderator) and SUPER_ADMIN (System Owner) can access shop moderation */
+  const isAdmin = computed(
+    () => user.value?.role === 'ADMIN' || user.value?.role === 'SUPER_ADMIN',
+  )
+  /** Strictly SUPER_ADMIN only: AdSense revenue settings, User Role RBAC, and Production Security */
+  const isSuperAdmin = computed(() => user.value?.role === 'SUPER_ADMIN')
+  const isShopOwner = computed(
+    () => user.value?.role === 'SHOP_OWNER' || isAdmin.value,
+  )
   const unreadCount = computed(() => notifications.value.filter((n) => !n.is_read).length)
+
+  function hasPermission(perm: string): boolean {
+    if (!user.value) return false
+    if (user.value.role === 'SUPER_ADMIN') return true
+    return Boolean(user.value.permissions?.includes(perm))
+  }
 
   function showToast(
     message: string,
@@ -61,30 +98,63 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  function logout() {
+  function clearSessionSilently() {
     token.value = null
     user.value = null
     notifications.value = []
     if (import.meta.client) {
       localStorage.removeItem('sw_access_token')
     }
+  }
+
+  function logout() {
+    clearSessionSilently()
     showToast('ອອກຈາກລະບົບແລ້ວ.', 'info', 'mdi-logout')
   }
 
-  async function initAuth() {
-    if (initialized.value) return
-    initialized.value = true
-    if (!import.meta.client) return
-    const saved = localStorage.getItem('sw_access_token')
-    if (!saved) return
-    token.value = saved
+  async function loadPublicConfig(force = false) {
+    if (publicConfigLoaded.value && !force) return
     try {
-      user.value = await apiFetch<UserOut>('/api/auth/me')
-      await fetchNotifications()
+      const cfg = await apiFetch<PublicSecurityConfig>('/api/auth/public-config')
+      publicConfig.app_env = cfg.app_env
+      publicConfig.is_production = cfg.is_production
+      publicConfig.demo_mode = cfg.demo_mode
+      publicConfigLoaded.value = true
     } catch {
-      token.value = null
-      user.value = null
-      localStorage.removeItem('sw_access_token')
+      // Keep safe defaults if backend is temporarily unreachable
+    }
+  }
+
+  async function initAuth() {
+    if (!import.meta.client) return
+    if (initialized.value) return
+    if (initPromise) {
+      await initPromise
+      return
+    }
+
+    initPromise = (async () => {
+      await loadPublicConfig()
+      const saved = localStorage.getItem('sw_access_token')
+      if (!saved) {
+        initialized.value = true
+        return
+      }
+      token.value = saved
+      try {
+        user.value = await apiFetch<UserOut>('/api/auth/me')
+        await fetchNotifications()
+      } catch {
+        clearSessionSilently()
+      } finally {
+        initialized.value = true
+      }
+    })()
+
+    try {
+      await initPromise
+    } finally {
+      initPromise = null
     }
   }
 
@@ -115,12 +185,25 @@ export const useAuthStore = defineStore('auth', () => {
     return resp.user
   }
 
+  async function changePassword(currentPassword: string, newPassword: string) {
+    const resp = await apiFetch<TokenResponse>('/api/auth/change-password', {
+      method: 'POST',
+      body: {
+        current_password: currentPassword,
+        new_password: newPassword,
+      },
+    })
+    setSession(resp)
+    showToast('ປ່ຽນລະຫັດຜ່ານສຳເລັດ ແລະ ຍົກເລີກເຊດຊັນເກົ່າໃນອຸປະກອນອື່ນແລ້ວ!', 'success', 'mdi-lock-check')
+    return resp.user
+  }
+
   async function refreshMe() {
     if (!token.value) return
     try {
       user.value = await apiFetch<UserOut>('/api/auth/me')
     } catch {
-      // ignore
+      clearSessionSilently()
     }
   }
 
@@ -159,16 +242,23 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     notifications,
     initialized,
+    publicConfig,
+    publicConfigLoaded,
     toast,
     isLoggedIn,
     isAdmin,
+    isSuperAdmin,
+    isShopOwner,
     unreadCount,
+    hasPermission,
     showToast,
     triggerBrowserNotification,
     requestBrowserNotificationPermission,
+    loadPublicConfig,
     initAuth,
     login,
     register,
+    changePassword,
     logout,
     refreshMe,
     fetchNotifications,
@@ -176,4 +266,3 @@ export const useAuthStore = defineStore('auth', () => {
     markAllNotificationsRead,
   }
 })
-
