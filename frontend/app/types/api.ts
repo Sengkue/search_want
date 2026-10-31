@@ -1,9 +1,13 @@
+export type UserRole = 'USER' | 'SHOP_OWNER' | 'ADMIN' | 'SUPER_ADMIN'
+
 export interface UserOut {
   id: number
   email: string
   full_name: string
   phone: string | null
-  role: 'USER' | 'SHOP_OWNER' | 'ADMIN'
+  role: UserRole
+  is_active: boolean
+  permissions: string[]
   created_at: string
 }
 
@@ -11,6 +15,12 @@ export interface TokenResponse {
   access_token: string
   token_type: string
   user: UserOut
+}
+
+export interface PublicSecurityConfig {
+  app_env: string
+  is_production: boolean
+  demo_mode: boolean
 }
 
 export interface CategoryOut {
@@ -97,6 +107,42 @@ export interface AdminStatsOut {
   total_users: number
 }
 
+export interface AdminUserOut {
+  id: number
+  email: string
+  full_name: string
+  phone: string | null
+  role: UserRole
+  is_active: boolean
+  shops_count: number
+  is_demo_account: boolean
+  created_at: string
+}
+
+export interface SecurityCheckItem {
+  key: string
+  label: string
+  passed: boolean
+  severity: 'critical' | 'warning' | 'info'
+  recommendation: string
+}
+
+export interface SecurityAuditOut {
+  app_env: string
+  is_production: boolean
+  demo_mode: boolean
+  enable_docs: boolean
+  strong_secret_key: boolean
+  cors_restricted: boolean
+  adsense_live_mode: boolean
+  weak_demo_accounts_count: number
+  super_admin_count: number
+  admin_count: number
+  shop_owner_count: number
+  user_count: number
+  checks: SecurityCheckItem[]
+}
+
 export interface ApprovalLogOut {
   id: number
   shop_id: number
@@ -137,5 +183,3 @@ export interface AdSenseConfigPayload {
   auto_ads: boolean
   test_mode: boolean
 }
-
-

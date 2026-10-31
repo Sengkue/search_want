@@ -8,7 +8,8 @@ const STATUS_LABELS: Record<string, string> = {
 const ROLE_LABELS: Record<string, string> = {
   USER: 'ຜູ້ໃຊ້ທົ່ວໄປ',
   SHOP_OWNER: 'ເຈົ້າຂອງຮ້ານ',
-  ADMIN: 'ຜູ້ດູແລລະບົບ',
+  ADMIN: 'ຜູ້ດູແລອະນຸມັດຮ້ານ',
+  SUPER_ADMIN: 'ຜູ້ບໍລິຫານສູງສຸດ',
 }
 
 const LOG_ACTION_LABELS: Record<string, string> = {
@@ -27,4 +28,3 @@ export function useLabels() {
 
   return { statusLabel, roleLabel, logActionLabel, formatDateTime }
 }
-
