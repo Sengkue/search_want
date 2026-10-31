@@ -222,7 +222,7 @@
                 v-model="adForm.slot_infeed"
                 label="In-Feed Ad Slot ID (ແຊກໃນລາຍການຮ້ານ)"
                 placeholder="1122334455"
-                prepend-inner-icon="mdi-view-Stream-outline"
+                prepend-inner-icon="mdi-view-stream-outline"
                 hint="ສະແດງຫຼັງຮ້ານທີ 2 ແລະ ທຸກໆ 6 ຮ້ານ"
                 persistent-hint
                 clearable
