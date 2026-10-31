@@ -377,3 +377,223 @@ def test_adsense_config_admin_update_and_ads_txt(client: TestClient) -> None:
 
 
 
+
+
+def test_high_level_rbac_super_admin_vs_moderator_and_token_revocation(
+    client: TestClient,
+) -> None:
+    # 1. Super Admin logs in
+    super_login = client.post(
+        "/api/auth/login",
+        json={"email": "admin@searchwant.com", "password": "admin123"},
+    )
+    assert super_login.status_code == 200
+    super_data = super_login.json()
+    assert super_data["user"]["role"] == "SUPER_ADMIN"
+    assert "super:manage_users" in super_data["user"]["permissions"]
+    assert "super:manage_adsense" in super_data["user"]["permissions"]
+    super_id = super_data["user"]["id"]
+    super_headers = {"Authorization": f"Bearer {super_data['access_token']}"}
+
+    # 2. Super Admin cannot demote or suspend their own account (self-lockout protection)
+    self_demote = client.patch(
+        f"/api/admin/users/{super_id}/role",
+        headers=super_headers,
+        json={"role": "USER"},
+    )
+    assert self_demote.status_code == 400
+
+    self_suspend = client.patch(
+        f"/api/admin/users/{super_id}/status",
+        headers=super_headers,
+        json={"is_active": False},
+    )
+    assert self_suspend.status_code == 400
+
+    # 3. Register a new staff member and promote them to ADMIN (Shop Moderator)
+    mod_reg = client.post(
+        "/api/auth/register",
+        json={
+            "email": "moderator_kham@example.com",
+            "password": "StrongPassword2026!",
+            "full_name": "Kham Moderator",
+        },
+    )
+    assert mod_reg.status_code == 201
+    mod_id = mod_reg.json()["user"]["id"]
+    old_user_token = mod_reg.json()["access_token"]
+
+    promote_resp = client.patch(
+        f"/api/admin/users/{mod_id}/role",
+        headers=super_headers,
+        json={"role": "ADMIN"},
+    )
+    assert promote_resp.status_code == 200
+    assert promote_resp.json()["role"] == "ADMIN"
+
+    # Old JWT before role change MUST be immediately invalidated via token_version increment
+    stale_me = client.get(
+        "/api/auth/me",
+        headers={"Authorization": f"Bearer {old_user_token}"},
+    )
+    assert stale_me.status_code == 401
+
+    # Moderator logs in fresh with ADMIN role
+    mod_login = client.post(
+        "/api/auth/login",
+        json={"email": "moderator_kham@example.com", "password": "StrongPassword2026!"},
+    )
+    assert mod_login.status_code == 200
+    mod_headers = {"Authorization": f"Bearer {mod_login.json()['access_token']}"}
+    assert mod_login.json()["user"]["role"] == "ADMIN"
+
+    # 4. ADMIN (Moderator) CAN view moderation stats & approve/reject shops...
+    mod_stats = client.get("/api/admin/stats", headers=mod_headers)
+    assert mod_stats.status_code == 200
+
+    # ...but ADMIN CANNOT modify Google AdSense revenue settings, manage user roles, or read security audit!
+    assert (
+        client.put("/api/admin/adsense", headers=mod_headers, json={"enabled": False}).status_code
+        == 403
+    )
+    assert client.get("/api/admin/users", headers=mod_headers).status_code == 403
+    assert (
+        client.patch(
+            f"/api/admin/users/{super_id}/role",
+            headers=mod_headers,
+            json={"role": "USER"},
+        ).status_code
+        == 403
+    )
+    assert client.get("/api/admin/security-audit", headers=mod_headers).status_code == 403
+
+    # 5. Super Admin suspends Moderator -> Moderator's active JWT and login are blocked immediately
+    suspend_resp = client.patch(
+        f"/api/admin/users/{mod_id}/status",
+        headers=super_headers,
+        json={"is_active": False},
+    )
+    assert suspend_resp.status_code == 200
+    assert suspend_resp.json()["is_active"] is False
+
+    assert client.get("/api/auth/me", headers=mod_headers).status_code in (401, 403)
+    blocked_login = client.post(
+        "/api/auth/login",
+        json={"email": "moderator_kham@example.com", "password": "StrongPassword2026!"},
+    )
+    assert blocked_login.status_code == 403
+
+
+def test_suspended_shop_cannot_be_edited_or_deleted_by_owner_and_password_rotation(
+    client: TestClient,
+) -> None:
+    # Owner logs in & creates a shop
+    owner_login = client.post(
+        "/api/auth/login",
+        json={"email": "owner@searchwant.com", "password": "owner123"},
+    )
+    old_owner_token = owner_login.json()["access_token"]
+    owner_headers = {"Authorization": f"Bearer {old_owner_token}"}
+
+    cats = client.get("/api/categories").json()
+    shop_payload = {
+        "category_id": cats[0]["id"],
+        "name": "Test Garage Vientiane",
+        "description": "General auto repair and diagnostics.",
+        "problem_tags": "car won't start",
+        "phone": "+856 20 5555 9999",
+        "address": "Dongdok Road",
+        "latitude": 17.976,
+        "longitude": 102.633,
+        "opening_hours": "08:00 - 18:00",
+        "is_emergency_24h": False,
+    }
+    created = client.post("/api/shops", headers=owner_headers, json=shop_payload).json()
+    shop_id = created["id"]
+
+    # Super Admin suspends the shop for policy violation
+    super_login = client.post(
+        "/api/auth/login",
+        json={"email": "admin@searchwant.com", "password": "admin123"},
+    )
+    super_headers = {"Authorization": f"Bearer {super_login.json()['access_token']}"}
+    sus = client.post(
+        f"/api/admin/shops/{shop_id}/decision",
+        headers=super_headers,
+        json={"action": "SUSPEND", "note": "Fake phone number reported."},
+    )
+    assert sus.status_code == 200
+    assert sus.json()["status"] == "SUSPENDED"
+
+    # Owner CANNOT bypass suspension by editing or deleting the suspended shop
+    bypass_edit = client.put(f"/api/shops/{shop_id}", headers=owner_headers, json=shop_payload)
+    assert bypass_edit.status_code == 403
+    bypass_del = client.delete(f"/api/shops/{shop_id}", headers=owner_headers)
+    assert bypass_del.status_code == 403
+
+    # Owner CAN delete their own PENDING draft shop
+    draft = client.post(
+        "/api/shops",
+        headers=owner_headers,
+        json={**shop_payload, "name": "Temporary Draft Shop"},
+    ).json()
+    del_draft = client.delete(f"/api/shops/{draft['id']}", headers=owner_headers)
+    assert del_draft.status_code == 200
+
+    # Password rotation revokes old JWT and issues fresh working JWT
+    pw_change = client.post(
+        "/api/auth/change-password",
+        headers=owner_headers,
+        json={"current_password": "owner123", "new_password": "NewOwnerSecure2026!"},
+    )
+    assert pw_change.status_code == 200
+    fresh_token = pw_change.json()["access_token"]
+
+    assert client.get("/api/auth/me", headers=owner_headers).status_code == 401
+    assert (
+        client.get("/api/auth/me", headers={"Authorization": f"Bearer {fresh_token}"}).status_code
+        == 200
+    )
+
+
+def test_production_hardening_docs_demo_block_and_secret_validation(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Security headers present on every response
+    health = client.get("/api/health")
+    assert health.headers.get("x-content-type-options") == "nosniff"
+    assert health.headers.get("x-frame-options") == "SAMEORIGIN"
+
+    # Simulate Production mode
+    monkeypatch.setattr(settings, "APP_ENV", "production")
+    monkeypatch.setattr(settings, "IS_PRODUCTION", True)
+    monkeypatch.setattr(settings, "DEMO_MODE", False)
+    monkeypatch.setattr(settings, "ENABLE_DOCS", False)
+
+    # 1. Public config signals production & hides demo UI
+    pub_cfg = client.get("/api/auth/public-config").json()
+    assert pub_cfg["is_production"] is True
+    assert pub_cfg["demo_mode"] is False
+
+    # 2. Swagger / ReDoc / OpenAPI schema are locked down (404)
+    assert client.get("/docs").status_code == 404
+    assert client.get("/redoc").status_code == 404
+    assert client.get("/openapi.json").status_code == 404
+
+    # 3. Known weak demo credentials cannot log in during Production
+    demo_login = client.post(
+        "/api/auth/login",
+        json={"email": "admin@searchwant.com", "password": "admin123"},
+    )
+    assert demo_login.status_code == 403
+
+    # 4. Production startup refuses weak/default SECRET_KEY
+    with pytest.raises(RuntimeError):
+        settings.validate_production_settings()
+
+    monkeypatch.setattr(
+        settings,
+        "SECRET_KEY",
+        "prod-vientiane-search-want-2026-ultra-strong-random-key-998877",
+    )
+    settings.validate_production_settings()
