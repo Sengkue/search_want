@@ -285,7 +285,7 @@ const richAds = [
   },
 ]
 
-const initialIdx = (props.placement === 'banner' ? 0 : 1 + props.variantIndex) % richAds.length
+const initialIdx = ((props.placement === 'banner' ? 0 : 1) + props.variantIndex) % richAds.length
 const currentAdIdx = ref(initialIdx)
 
 const activeAd = computed(() => richAds[currentAdIdx.value % richAds.length]!)
