@@ -342,46 +342,39 @@ def seed_shops_around_coordinates(
     return created_count
 
 
+def is_demo_email(email: str) -> bool:
+    return email.strip().lower() in DEMO_ACCOUNT_DEFAULTS
+
+
+def count_active_weak_demo_accounts(db: Session) -> int:
+    count = 0
+    for email, (weak_pass, _name, _phone, _role) in DEMO_ACCOUNT_DEFAULTS.items():
+        user = db.query(User).filter(User.email == email, User.is_active.is_(True)).first()
+        if user and verify_password(weak_pass, user.password_hash):
+            count += 1
+    return count
+
+
+def disable_weak_demo_accounts(db: Session, exclude_user_id: int | None = None) -> int:
+    disabled_count = 0
+    for email, (weak_pass, _name, _phone, _role) in DEMO_ACCOUNT_DEFAULTS.items():
+        user = db.query(User).filter(User.email == email, User.is_active.is_(True)).first()
+        if not user:
+            continue
+        if exclude_user_id is not None and user.id == exclude_user_id:
+            continue
+        if verify_password(weak_pass, user.password_hash):
+            user.is_active = False
+            user.token_version = (user.token_version or 1) + 1
+            disabled_count += 1
+    if disabled_count > 0:
+        db.commit()
+    return disabled_count
+
+
 def seed_initial_data(db: Session) -> None:
-    """Idempotently populate demo accounts, categories, problem keywords, and initial shops."""
-    admin = db.query(User).filter(User.email == "admin@searchwant.com").first()
-    if not admin:
-        admin = User(
-            email="admin@searchwant.com",
-            password_hash=hash_password("admin123"),
-            full_name="ຜູ້ດູແລລະບົບ",
-            phone="+856 20 5500 0001",
-            role="ADMIN",
-        )
-        db.add(admin)
-
-    owner = db.query(User).filter(User.email == "owner@searchwant.com").first()
-    if not owner:
-        owner = User(
-            email="owner@searchwant.com",
-            password_hash=hash_password("owner123"),
-            full_name="ສົມໃຈ ເຈົ້າຂອງອູ່ລົດ",
-            phone="+856 20 5560 1230",
-            role="SHOP_OWNER",
-        )
-        db.add(owner)
-
-    customer = db.query(User).filter(User.email == "user@searchwant.com").first()
-    if not customer:
-        customer = User(
-            email="user@searchwant.com",
-            password_hash=hash_password("user123"),
-            full_name="ບຸນມີ ຄົນຂັບລົດ",
-            phone="+856 20 5911 2233",
-            role="USER",
-        )
-        db.add(customer)
-
-    db.commit()
-    db.refresh(admin)
-    db.refresh(owner)
-
-    # Seed Categories
+    """Populate categories, problem keywords, bootstrap Super Admin, and (only in DEMO_MODE) demo accounts/shops."""
+    # 1. Always seed Categories & Problem Keywords (Core taxonomy required in both Dev & Production)
     existing_cats = {c.slug: c for c in db.query(Category).all()}
     for c_data in CATEGORIES_DATA:
         if c_data["slug"] not in existing_cats:
@@ -390,7 +383,6 @@ def seed_initial_data(db: Session) -> None:
 
     cat_map = {c.slug: c for c in db.query(Category).all()}
 
-    # Seed Problem Keywords (Lao + English synonyms share one symptom label/advice)
     if db.query(ProblemKeyword).count() == 0:
         for slug, keywords, label, hint in KEYWORDS_DATA:
             cat = cat_map.get(slug)
@@ -407,7 +399,82 @@ def seed_initial_data(db: Session) -> None:
                 )
         db.commit()
 
-    # Seed Initial Shops if database has none
+    # 2. Optional Production Bootstrap Super Admin via .env (SEARCH_WANT_SUPER_ADMIN_EMAIL / PASSWORD)
+    if settings.BOOTSTRAP_SUPER_ADMIN_EMAIL and settings.BOOTSTRAP_SUPER_ADMIN_PASSWORD:
+        boot_email = settings.BOOTSTRAP_SUPER_ADMIN_EMAIL
+        boot_user = db.query(User).filter(User.email == boot_email).first()
+        if not boot_user:
+            boot_user = User(
+                email=boot_email,
+                password_hash=hash_password(settings.BOOTSTRAP_SUPER_ADMIN_PASSWORD),
+                full_name=settings.BOOTSTRAP_SUPER_ADMIN_NAME or "ຜູ້ບໍລິຫານສູງສຸດ",
+                role=ROLE_SUPER_ADMIN,
+                is_active=True,
+                token_version=1,
+            )
+            db.add(boot_user)
+        else:
+            boot_user.role = ROLE_SUPER_ADMIN
+            boot_user.is_active = True
+        db.commit()
+
+    # 3. Production Hardening: Never seed demo accounts/shops when DEMO_MODE is False;
+    #    and automatically deactivate any leftover weak-password demo accounts in Production!
+    if not settings.DEMO_MODE:
+        if settings.IS_PRODUCTION:
+            disable_weak_demo_accounts(db)
+        return
+
+    # 4. Development / Demo Mode Only: Seed convenient test accounts & sample shops
+    admin = db.query(User).filter(User.email == "admin@searchwant.com").first()
+    if not admin:
+        admin = User(
+            email="admin@searchwant.com",
+            password_hash=hash_password("admin123"),
+            full_name="ຜູ້ດູແລລະບົບ",
+            phone="+856 20 5500 0001",
+            role=ROLE_SUPER_ADMIN,
+            is_active=True,
+            token_version=1,
+        )
+        db.add(admin)
+    elif (
+        admin.role == "ADMIN"
+        and db.query(User).filter(User.role == ROLE_SUPER_ADMIN).count() == 0
+    ):
+        # Upgrade existing dev Admin to SUPER_ADMIN seamlessly
+        admin.role = ROLE_SUPER_ADMIN
+
+    owner = db.query(User).filter(User.email == "owner@searchwant.com").first()
+    if not owner:
+        owner = User(
+            email="owner@searchwant.com",
+            password_hash=hash_password("owner123"),
+            full_name="ສົມໃຈ ເຈົ້າຂອງອູ່ລົດ",
+            phone="+856 20 5560 1230",
+            role=ROLE_SHOP_OWNER,
+            is_active=True,
+            token_version=1,
+        )
+        db.add(owner)
+
+    customer = db.query(User).filter(User.email == "user@searchwant.com").first()
+    if not customer:
+        customer = User(
+            email="user@searchwant.com",
+            password_hash=hash_password("user123"),
+            full_name="ບຸນມີ ຄົນຂັບລົດ",
+            phone="+856 20 5911 2233",
+            role=ROLE_USER,
+            is_active=True,
+            token_version=1,
+        )
+        db.add(customer)
+
+    db.commit()
+    db.refresh(admin)
+    db.refresh(owner)
+
     if db.query(Shop).count() == 0:
         seed_shops_around_coordinates(
             db=db,
