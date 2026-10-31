@@ -749,7 +749,12 @@ async function confirmRejectOrSuspend() {
 
 onMounted(async () => {
   await authStore.initAuth()
+  if (route.query.tab === 'ADSENSE') {
+    activeFilter.value = 'ADSENSE'
+  }
   if (authStore.isAdmin) {
+    await loadAdSenseConfig(true)
+    syncAdFormFromConfig()
     await refreshAll()
   }
 })
