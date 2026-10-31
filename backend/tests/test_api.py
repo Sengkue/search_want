@@ -272,18 +272,20 @@ def test_mobile_apk_download_endpoints(client: TestClient) -> None:
 
 
 def test_adsense_config_admin_update_and_ads_txt(client: TestClient) -> None:
-    # 1. Public default AdSense config starts enabled in test_mode
+    # 1. Public default AdSense config starts enabled with configured Publisher ID
     initial = client.get("/api/adsense/config")
     assert initial.status_code == 200
     cfg = initial.json()
     assert cfg["enabled"] is True
-    assert cfg["test_mode"] is True
-    assert cfg["client_id"] == ""
+    assert cfg["client_id"] == "ca-pub-4990570878383229"
 
-    # Default /ads.txt returns guidance comment when Publisher ID is unset
+    # Default /ads.txt returns official Google verification line
     ads_txt_before = client.get("/ads.txt")
     assert ads_txt_before.status_code == 200
-    assert ads_txt_before.text.startswith("#")
+    assert (
+        ads_txt_before.text.strip()
+        == "google.com, pub-4990570878383229, DIRECT, f08c47fec0942fa0"
+    )
 
     # 2. Non-admin cannot modify AdSense settings
     reg = client.post(
