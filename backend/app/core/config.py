@@ -18,7 +18,7 @@ class Settings:
         "SEARCH_WANT_ADSENSE_CLIENT_ID", "ca-pub-4990570878383229"
     )
     ADSENSE_SLOT_INFEED: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_INFEED", "")
-    ADSENSE_SLOT_BANNER: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_BANNER", "")
+    ADSENSE_SLOT_BANNER: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_BANNER", "8750022785")
 
 
 settings = Settings()
