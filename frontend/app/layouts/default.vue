@@ -177,20 +177,25 @@
                 <v-chip
                   v-if="authStore.isAdmin"
                   size="x-small"
-                  color="warning"
+                  :color="authStore.isSuperAdmin ? 'deep-purple' : 'warning'"
                   variant="flat"
-                  class="ml-1 font-weight-bold"
+                  class="ml-1 font-weight-bold text-white"
                 >
-                  ຜູ້ດູແລ
+                  {{ authStore.isSuperAdmin ? 'ສູງສຸດ' : 'ຜູ້ດູແລ' }}
                 </v-chip>
               </v-btn>
             </template>
 
-            <v-card min-width="220" class="pa-2">
+            <v-card min-width="235" class="pa-2">
               <div class="px-3 py-2">
                 <div class="font-weight-bold text-body-medium">{{ authStore.user.full_name }}</div>
                 <div class="text-body-small text-medium-emphasis">{{ authStore.user.email }}</div>
-                <v-chip size="x-small" color="primary" variant="tonal" class="mt-1">
+                <v-chip
+                  size="x-small"
+                  :color="authStore.isSuperAdmin ? 'deep-purple' : authStore.isAdmin ? 'warning' : 'primary'"
+                  variant="tonal"
+                  class="mt-1 font-weight-bold"
+                >
                   {{ roleLabel(authStore.user.role) }}
                 </v-chip>
               </div>
@@ -203,6 +208,17 @@
                   to="/admin/approvals"
                   prepend-icon="mdi-shield-check-outline"
                   title="ອະນຸມັດຮ້ານ"
+                />
+                <v-list-item
+                  v-if="authStore.isSuperAdmin"
+                  to="/admin/approvals?tab=RBAC"
+                  prepend-icon="mdi-shield-crown-outline"
+                  title="ສິດຜູ້ໃຊ້ & Production"
+                />
+                <v-list-item
+                  prepend-icon="mdi-key-change"
+                  title="ປ່ຽນລະຫັດຜ່ານ"
+                  @click="openPasswordDialog"
                 />
                 <v-list-item
                   prepend-icon="mdi-logout"
