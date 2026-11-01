@@ -84,6 +84,7 @@
           variant="text"
           size="small"
           :title="isDark ? 'ປ່ຽນເປັນໂໝດແຈ້ງ' : 'ປ່ຽນເປັນໂໝດມືດ'"
+          :aria-label="isDark ? 'ປ່ຽນເປັນໂໝດແຈ້ງ' : 'ປ່ຽນເປັນໂໝດມືດ'"
           @click="toggleTheme"
         >
           <v-icon :icon="isDark ? 'mdi-weather-sunny' : 'mdi-weather-night'" size="20" />
@@ -97,7 +98,15 @@
           :close-on-content-click="false"
         >
           <template #activator="{ props: menuProps }">
-            <v-btn icon variant="text" size="small" v-bind="menuProps" @click="authStore.fetchNotifications()">
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              aria-label="ການແຈ້ງເຕືອນ"
+              title="ການແຈ້ງເຕືອນ"
+              v-bind="menuProps"
+              @click="authStore.fetchNotifications()"
+            >
               <v-badge
                 v-if="authStore.unreadCount > 0"
                 :content="authStore.unreadCount"

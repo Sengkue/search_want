@@ -319,11 +319,6 @@
       </div>
     </v-card>
 
-    <!-- Top Responsive Google AdSense Leaderboard Banner (Client-lazy so SSR HTML stays 100% pure SEO content) -->
-    <ClientOnly>
-      <LazyAdSenseSlot placement="banner" :variant-index="0" class="mb-3" />
-    </ClientOnly>
-
     <!-- Smart Problem Diagnosis Banner (Shown cleanly when user searches a symptom/problem) -->
     <div ref="resultsAnchorRef" />
     <v-alert
@@ -1074,3 +1069,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  if (blurTimer) clearTimeout(blurTimer)
+  document.removeEventListener('pointerdown', handleDocumentPointerDown)
+})
+</script>
