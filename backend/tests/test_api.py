@@ -597,3 +597,30 @@ def test_production_hardening_docs_demo_block_and_secret_validation(
         "prod-vientiane-search-want-2026-ultra-strong-random-key-998877",
     )
     settings.validate_production_settings()
+
+
+def test_dynamic_seo_sitemap_and_robots_only_expose_approved_shops(
+    client: TestClient,
+) -> None:
+    robots = client.get("/robots.txt", headers={"host": "searchwant.la"})
+    assert robots.status_code == 200
+    assert "User-agent: Googlebot" in robots.text
+    assert "Disallow: /admin/" in robots.text
+    assert "Sitemap: http://searchwant.la/sitemap.xml" in robots.text
+
+    sitemap = client.get("/sitemap.xml", headers={"host": "searchwant.la"})
+    assert sitemap.status_code == 200
+    assert "application/xml" in sitemap.headers["content-type"]
+    assert "<loc>http://searchwant.la/</loc>" in sitemap.text
+    assert "<loc>http://searchwant.la/shops/1</loc>" in sitemap.text
+
+    # Pending shop IDs must NOT leak into public sitemap.xml
+    admin_login = client.post(
+        "/api/auth/login",
+        json={"email": "admin@searchwant.com", "password": "admin123"},
+    )
+    admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
+    pending_shops = client.get("/api/admin/shops?status_filter=PENDING", headers=admin_headers).json()
+    assert len(pending_shops) >= 1
+    for p_shop in pending_shops:
+        assert f"/shops/{p_shop['id']}</loc>" not in sitemap.text
