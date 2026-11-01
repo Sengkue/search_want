@@ -613,9 +613,9 @@
       </template>
     </v-snackbar>
 
-    <!-- Lazy Client-Only Helper Dialogs (Zero SSR DOM overhead) -->
+    <!-- Lazy Client-Only Helper Dialogs (Zero SSR DOM & zero initial hydration overhead until opened) -->
     <ClientOnly>
-      <LazyMobileInstallDialog v-model="installDialogOpen" />
+      <LazyMobileInstallDialog v-if="installDialogOpen" v-model="installDialogOpen" />
       <LazyGpsSecureOriginDialog />
     </ClientOnly>
   </v-app>

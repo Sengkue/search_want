@@ -367,15 +367,15 @@
         </v-chip>
       </div>
 
-      <!-- Mobile Segmented View Pill -->
+      <!-- Mobile Segmented View Pill (CSS-controlled .sw-mobile-only for zero SSR hydration CLS!) -->
       <v-btn-toggle
-        v-if="smAndDown"
         v-model="mobileViewMode"
         mandatory
         color="primary"
         density="compact"
         rounded="pill"
         variant="outlined"
+        class="sw-mobile-only"
         style="height: 28px"
       >
         <v-btn value="split" size="x-small" prepend-icon="mdi-view-agenda-outline">
@@ -392,21 +392,17 @@
 
     <!-- Responsive Split Content: Map + Distance-Sorted Shop Cards -->
     <v-row density="compact">
-      <!-- Interactive Map Column (Compact 240px on mobile split view so cards appear right below!) -->
+      <!-- Interactive Map Column (CSS-sized so SSR and Mobile Client match 100% with 0.000 CLS!) -->
       <v-col
-        v-if="!smAndDown || mobileViewMode !== 'list'"
+        v-show="mobileViewMode !== 'list'"
         cols="12"
         md="7"
         order="1"
         order-md="2"
       >
         <v-card
-          class="pa-1 pa-md-2 mb-2 mb-md-0"
-          :style="
-            smAndDown
-              ? { height: mobileViewMode === 'map' ? 'calc(100vh - 255px)' : '235px' }
-              : { height: 'calc(100vh - 235px)', minHeight: '520px', position: 'sticky', top: '72px' }
-          "
+          class="sw-discover-map-card pa-1 pa-md-2 mb-2 mb-md-0"
+          :class="{ 'is-map-fullscreen': mobileViewMode === 'map' }"
         >
           <ClientOnly>
             <ShopMap
@@ -431,7 +427,7 @@
 
       <!-- Nearby Matched Shops List Column -->
       <v-col
-        v-if="!smAndDown || mobileViewMode !== 'map'"
+        v-show="mobileViewMode !== 'map'"
         cols="12"
         md="5"
         order="2"
@@ -455,10 +451,10 @@
               @select="handleSelectShop"
               @focus-map="handleFocusOnMap"
             />
-            <ClientOnly v-if="idx === 0 || (idx > 0 && idx % 5 === 0)">
+            <ClientOnly v-if="idx === 2 || (idx > 2 && (idx - 2) % 5 === 0)">
               <LazyAdSenseSlot
                 placement="infeed"
-                :variant-index="Math.floor(idx / 5)"
+                :variant-index="Math.floor((idx - 2) / 5)"
                 class="mb-2"
               />
             </ClientOnly>

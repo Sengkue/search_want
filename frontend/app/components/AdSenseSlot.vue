@@ -138,7 +138,7 @@
               {{ activeAd.description }}
             </div>
             <div class="text-body-small text-medium-emphasis font-weight-medium" style="font-size: 11px">
-              {{ activeAd.advertiser }} • <span style="opacity: 0.8">{{ activeAd.domain }}</span>
+              {{ activeAd.advertiser }} • <span>{{ activeAd.domain }}</span>
             </div>
           </div>
 

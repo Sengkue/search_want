@@ -1,6 +1,42 @@
 <template>
-  <div class="position-relative w-100 h-100" :style="{ minHeight: height }">
+  <div
+    class="position-relative w-100 h-100 sw-map-shell"
+    :style="{ minHeight: height }"
+    @pointerdown="activateMapNow"
+    @touchstart.passive="activateMapNow"
+  >
     <div ref="mapContainer" class="sw-map-container" :style="{ height: height }" />
+
+    <!-- Instant Zero-Blocking Vector Map Preview Backdrop (Upgrades seamlessly to Live Leaflet on first interaction) -->
+    <div
+      v-if="!isMapHydrated && mode !== 'picker'"
+      class="sw-map-preview-backdrop d-flex flex-column align-center justify-center text-center pa-3"
+      role="button"
+      tabindex="0"
+      aria-label="ແຕະເພື່ອເປີດແຜນທີ່ໂຕ້ຕອບສົດ"
+      @click="activateMapNow"
+      @keydown.enter.prevent="activateMapNow"
+    >
+      <div class="sw-user-pulse mb-2" aria-hidden="true" />
+      <div class="text-body-medium font-weight-bold">
+        ແຜນທີ່ GPS ຮ້ານສ້ອມແປງໃກ້ຄຽງ
+        <span v-if="mode === 'discover' && shops.length > 0">({{ shops.length }} ຮ້ານ)</span>
+      </div>
+      <div class="text-body-small text-medium-emphasis mb-2">
+        ແຕະ ຫຼື ເລື່ອນໜ້າຈໍເພື່ອໂຫຼດແຜນທີ່ໂຕ້ຕອບສົດ
+      </div>
+      <v-btn
+        color="primary"
+        variant="tonal"
+        size="x-small"
+        rounded="pill"
+        prepend-icon="mdi-map-outline"
+        class="font-weight-bold px-3"
+        @click.stop="activateMapNow"
+      >
+        ເປີດແຜນທີ່ສົດ
+      </v-btn>
+    </div>
 
     <!-- Floating Map Overlay Legend / Helper -->
     <div
@@ -82,11 +118,13 @@ const emit = defineEmits<{
 
 const mapContainer = ref<HTMLElement | null>(null)
 const pickingUserPin = ref(false)
+const isMapHydrated = ref(false)
 const { requestMapPinPickCount } = useGps()
 
 watch(requestMapPinPickCount, () => {
   if (props.mode === 'discover') {
     pickingUserPin.value = true
+    activateMapNow()
   }
 })
 
@@ -357,12 +395,37 @@ async function initMap(container: HTMLElement) {
       map?.invalidateSize()
     })
     resizeObserver.observe(targetEl)
+    isMapHydrated.value = true
   } finally {
     initializingMap = false
   }
 }
 
-let initTimer: ReturnType<typeof setTimeout> | null = null
+const INTERACT_EVENTS = ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'scroll', 'keydown'] as const
+let interactionBound = false
+
+function removeInteractionTriggers() {
+  if (!import.meta.client || !interactionBound) return
+  interactionBound = false
+  for (const ev of INTERACT_EVENTS) {
+    window.removeEventListener(ev, activateMapNow)
+  }
+}
+
+function activateMapNow() {
+  removeInteractionTriggers()
+  if (mapContainer.value && !map && !initializingMap) {
+    void initMap(mapContainer.value)
+  }
+}
+
+function bindInteractionTriggers() {
+  if (!import.meta.client || interactionBound || map) return
+  interactionBound = true
+  for (const ev of INTERACT_EVENTS) {
+    window.addEventListener(ev, activateMapNow, { once: true, passive: true })
+  }
+}
 
 watch(
   mapContainer,
@@ -371,13 +434,7 @@ watch(
       if (props.mode === 'picker') {
         void initMap(el)
       } else {
-        // Yield 160ms so Hero Search Bar & Shop Cards paint instant FCP/LCP before OSM tile requests start
-        if (initTimer) clearTimeout(initTimer)
-        initTimer = setTimeout(() => {
-          if (el.isConnected && !map) {
-            void initMap(el)
-          }
-        }, 160)
+        bindInteractionTriggers()
       }
     }
   },
@@ -385,10 +442,7 @@ watch(
 )
 
 onBeforeUnmount(() => {
-  if (initTimer) {
-    clearTimeout(initTimer)
-    initTimer = null
-  }
+  removeInteractionTriggers()
   resizeObserver?.disconnect()
   resizeObserver = null
   if (map) {
@@ -408,6 +462,7 @@ onBeforeUnmount(() => {
   shopLayerGroup = null
   shopMarkersMap.clear()
   initializingMap = false
+  isMapHydrated.value = false
   hasFittedInitialShops = false
 })
 
@@ -436,7 +491,10 @@ watch(
 
 watch(
   () => props.selectedShopId,
-  (newId) => {
+  async (newId) => {
+    if (newId && !map && mapContainer.value) {
+      await initMap(mapContainer.value)
+    }
     if (!map || props.mode !== 'discover') return
     renderShopMarkers(false)
     if (newId) {
