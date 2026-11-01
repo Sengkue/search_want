@@ -350,7 +350,17 @@ watch(
 
 onBeforeUnmount(() => {
   resizeObserver?.disconnect()
-  map?.remove()
+  resizeObserver = null
+  if (map) {
+    try {
+      map.stop()
+      map.closePopup()
+      map.off()
+      map.remove()
+    } catch {
+      // Ignore Leaflet teardown race if container already detached
+    }
+  }
   map = null
   userMarker = null
   radiusCircle = null
@@ -382,7 +392,6 @@ watch(
     }
     renderShopMarkers(shouldFit)
   },
-  { deep: true },
 )
 
 watch(
