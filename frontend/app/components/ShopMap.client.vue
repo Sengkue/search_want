@@ -37,6 +37,7 @@
         elevation="2"
         icon="mdi-crosshairs"
         title="ກັບໄປຕຳແໜ່ງຂອງຂ້ອຍ"
+        aria-label="ກັບໄປຕຳແໜ່ງຂອງຂ້ອຍ"
         @click="recenterOnUser"
       />
     </div>
@@ -46,6 +47,7 @@
 <script setup lang="ts">
 import 'leaflet/dist/leaflet.css'
 import type { ShopOut } from '~/types/api'
+import { renderMdiSvgHtml } from '~/utils/mdiIcons'
 
 const props = withDefaults(
   defineProps<{
@@ -124,7 +126,7 @@ function buildShopIcon(shop: ShopOut, isSelected: boolean) {
   const selClass = isSelected ? 'is-selected' : ''
   return L.divIcon({
     className: 'sw-pin-wrapper',
-    html: `<div class="sw-shop-marker ${selClass}" style="background:${bg}"><i class="mdi ${iconName}"></i></div>`,
+    html: `<div class="sw-shop-marker ${selClass}" style="background:${bg}">${renderMdiSvgHtml(iconName, 16)}</div>`,
     iconSize: [38, 38],
     iconAnchor: [19, 38],
     popupAnchor: [0, -36],
@@ -135,10 +137,22 @@ function buildPickerIcon() {
   if (!L) return undefined
   return L.divIcon({
     className: 'sw-pin-wrapper',
-    html: '<div class="sw-picker-marker"><i class="mdi mdi-store-plus"></i></div>',
+    html: `<div class="sw-picker-marker">${renderMdiSvgHtml('mdi-store-plus', 20)}</div>`,
     iconSize: [44, 44],
     iconAnchor: [22, 44],
   })
+}
+
+function setMarkerAriaLabel(marker: import('leaflet').Marker, label: string) {
+  const apply = () => {
+    const el = marker.getElement()
+    if (el) {
+      el.setAttribute('aria-label', label)
+      el.setAttribute('title', label)
+    }
+  }
+  apply()
+  marker.on('add', apply)
 }
 
 function renderUserAndRadius() {
@@ -150,11 +164,14 @@ function renderUserAndRadius() {
       icon: buildUserIcon(),
       draggable: true,
       zIndexOffset: 900,
+      title: 'ຕຳແໜ່ງປັດຈຸບັນຂອງທ່ານ',
+      alt: 'ຕຳແໜ່ງປັດຈຸບັນຂອງທ່ານ',
     })
       .addTo(map)
       .bindPopup(
         '<strong>ຕຳແໜ່ງປັດຈຸບັນຂອງທ່ານ</strong><br/><span style="font-size:11px;color:#64748b">ລາກໝຸດສີຟ້ານີ້ເພື່ອປ່ຽນຕຳແໜ່ງໄດ້ທັນທີ</span>',
       )
+    setMarkerAriaLabel(userMarker, 'ຕຳແໜ່ງປັດຈຸບັນຂອງທ່ານ')
 
     userMarker.on('dragend', () => {
       if (!userMarker) return
@@ -196,7 +213,10 @@ function renderShopMarkers(fitBounds = false) {
     const marker = L.marker([shop.latitude, shop.longitude], {
       icon: buildShopIcon(shop, isSel),
       zIndexOffset: isSel ? 700 : 200,
+      title: shop.name,
+      alt: shop.name,
     })
+    setMarkerAriaLabel(marker, shop.name)
 
     const distBadge =
       shop.distance_km !== null && shop.distance_km !== undefined
@@ -252,7 +272,10 @@ function renderPickerOrPreview() {
     pickerMarker = L.marker(coords, {
       icon: buildPickerIcon(),
       draggable,
+      title: 'ໝຸດຕຳແໜ່ງຮ້ານ',
+      alt: 'ໝຸດຕຳແໜ່ງຮ້ານ',
     }).addTo(map)
+    setMarkerAriaLabel(pickerMarker, 'ໝຸດຕຳແໜ່ງຮ້ານ')
 
     if (draggable) {
       pickerMarker.on('dragend', () => {
@@ -298,6 +321,7 @@ async function initMap(container: HTMLElement) {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19,
+      detectRetina: true,
     }).addTo(map)
 
     shopLayerGroup = L.layerGroup().addTo(map)
@@ -338,17 +362,33 @@ async function initMap(container: HTMLElement) {
   }
 }
 
+let initTimer: ReturnType<typeof setTimeout> | null = null
+
 watch(
   mapContainer,
   (el) => {
     if (el && !map) {
-      void initMap(el)
+      if (props.mode === 'picker') {
+        void initMap(el)
+      } else {
+        // Yield 160ms so Hero Search Bar & Shop Cards paint instant FCP/LCP before OSM tile requests start
+        if (initTimer) clearTimeout(initTimer)
+        initTimer = setTimeout(() => {
+          if (el.isConnected && !map) {
+            void initMap(el)
+          }
+        }, 160)
+      }
     }
   },
   { immediate: true, flush: 'post' },
 )
 
 onBeforeUnmount(() => {
+  if (initTimer) {
+    clearTimeout(initTimer)
+    initTimer = null
+  }
   resizeObserver?.disconnect()
   resizeObserver = null
   if (map) {

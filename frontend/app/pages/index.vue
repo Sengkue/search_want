@@ -92,7 +92,6 @@
             type="submit"
             class="sw-search-submit-btn"
             :disabled="shopsStore.loadingNearby"
-            aria-label="ຄົ້ນຫາຮ້ານໃກ້ຄຽງ"
             @mousedown.prevent
           >
             <v-progress-circular
@@ -233,20 +232,22 @@
 
       <!-- Single-Row Swipeable Filter & Quick-Problem Chips -->
       <div class="sw-chip-rail mb-2">
-        <!-- Distance Menu Chip -->
+        <!-- Distance Menu Button Pill (Real <button> for 100% valid ARIA menu activator) -->
         <v-menu location="bottom start">
           <template #activator="{ props: menuProps }">
-            <v-chip
+            <v-btn
               v-bind="menuProps"
-              size="small"
+              size="x-small"
+              rounded="pill"
               color="primary"
               variant="tonal"
               prepend-icon="mdi-map-marker-radius"
               append-icon="mdi-chevron-down"
-              class="font-weight-bold"
+              class="font-weight-bold px-3"
+              style="height: 26px"
             >
               {{ currentRadiusLabel }}
-            </v-chip>
+            </v-btn>
           </template>
           <v-list density="compact" min-width="160">
             <v-list-item
@@ -1073,7 +1074,3 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (blurTimer) clearTimeout(blurTimer)
-  document.removeEventListener('pointerdown', handleDocumentPointerDown)
-})
-</script>
