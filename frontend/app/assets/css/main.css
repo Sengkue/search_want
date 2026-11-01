@@ -831,3 +831,95 @@ textarea::placeholder,
     max-height: 205px;
   }
 }
+
+/* ==========================================================================
+   CORE WEB VITALS, SSR ZERO-CLS RESPONSIVE CHROME & SEMANTIC SEO STYLES
+   ========================================================================== */
+@media (min-width: 960px) {
+  .sw-mobile-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 959.98px) {
+  .sw-desktop-only {
+    display: none !important;
+  }
+
+  .sw-main-content {
+    --v-layout-top: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 72px !important;
+  }
+
+  .sw-main-content.is-keyboard-open {
+    padding-bottom: 12px !important;
+  }
+}
+
+/* Skip layout/paint cost for off-screen shop cards -> silky 60fps scrolling */
+.sw-shop-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 190px;
+}
+
+.sw-shop-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sw-shop-title-link:hover {
+  color: #1a73e8;
+  text-decoration: underline;
+}
+
+.v-theme--searchWantDark .sw-shop-title-link:hover {
+  color: #60a5fa;
+}
+
+/* Zero-JS Semantic HTML5 <details> FAQ Accordion for Lao Local SEO */
+.sw-faq-item {
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: background-color 0.16s ease, border-color 0.16s ease;
+}
+
+.v-theme--searchWantLight .sw-faq-item {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.v-theme--searchWantDark .sw-faq-item {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.sw-faq-item + .sw-faq-item {
+  margin-top: 8px;
+}
+
+.sw-faq-item summary {
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sw-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.sw-faq-item summary::after {
+  content: '+';
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1a73e8;
+  flex-shrink: 0;
+}
+
+.sw-faq-item[open] summary::after {
+  content: '−';
+}

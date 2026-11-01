@@ -1,12 +1,11 @@
 <template>
   <v-app>
-    <!-- DESKTOP ONLY Top Navbar (Hidden completely on Mobile Phones per UX best-practice) -->
+    <!-- DESKTOP ONLY Top Navbar (CSS-hidden on Mobile for zero SSR hydration flash) -->
     <v-app-bar
-      v-if="!smAndDown"
       elevation="0"
       color="transparent"
       height="58"
-      class="px-4 sw-desktop-navbar"
+      class="px-4 sw-desktop-navbar sw-desktop-only"
     >
       <NuxtLink to="/" class="d-flex align-center text-decoration-none text-high-emphasis ga-2 mr-4">
         <BrandLogo :size="36" />
@@ -245,17 +244,21 @@
       </div>
     </v-app-bar>
 
-    <!-- Main Page Content (No top navbar offset on Mobile; clean bottom clearance for Mobile Footer) -->
-    <v-main :style="smAndDown ? (isMobileKeyboardOpen ? 'padding-bottom: 12px' : 'padding-bottom: 72px') : ''">
+    <!-- Main Page Content (CSS-first zero-CLS responsive clearance for Mobile Footer) -->
+    <v-main class="sw-main-content" :class="{ 'is-keyboard-open': isMobileKeyboardOpen }">
       <slot />
 
-      <!-- Mandatory Google AdSense Policy Compliance Footer Link (Privacy & Cookie Disclosure) -->
+      <!-- Mandatory Google AdSense Policy Compliance & Sitemap SEO Footer -->
       <footer class="text-center py-3 px-3 text-body-small text-medium-emphasis" style="font-size: 11.5px">
         <span>Search-Want</span>
         <span class="mx-1">•</span>
         <NuxtLink to="/privacy" class="text-primary text-decoration-none font-weight-medium">
           ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ &amp; ໂຄສະນາ
         </NuxtLink>
+        <span class="mx-1">•</span>
+        <a href="/sitemap.xml" target="_blank" class="text-medium-emphasis text-decoration-none">
+          ແຜນຜັງເວັບໄຊ (Sitemap)
+        </a>
         <span class="mx-1">•</span>
         <a href="/ads.txt" target="_blank" class="text-medium-emphasis text-decoration-none">
           ads.txt
@@ -265,8 +268,7 @@
 
     <!-- MOBILE ONLY Sleek Bottom Footer Bar (Auto-hides while virtual keyboard is open on phones) -->
     <nav
-      v-if="smAndDown"
-      class="sw-mobile-footer"
+      class="sw-mobile-footer sw-mobile-only"
       :class="{ 'is-keyboard-open': isMobileKeyboardOpen }"
       aria-label="ເມນູຫຼັກມືຖື"
     >
@@ -602,17 +604,16 @@
       </template>
     </v-snackbar>
 
-    <!-- Automatic Mobile APK / App Install Prompt Dialog -->
-    <MobileInstallDialog v-model="installDialogOpen" />
-
-    <!-- Smart GPS HTTPS / Localhost / Map-Pin Helper Dialog -->
-    <GpsSecureOriginDialog />
+    <!-- Lazy Client-Only Helper Dialogs (Zero SSR DOM overhead) -->
+    <ClientOnly>
+      <LazyMobileInstallDialog v-model="installDialogOpen" />
+      <LazyGpsSecureOriginDialog />
+    </ClientOnly>
   </v-app>
 </template>
 
 <script setup lang="ts">
 import { useDisplay, useTheme } from 'vuetify'
-import MobileInstallDialog from '~/components/MobileInstallDialog.vue'
 import { useAuthStore } from '~/stores/auth'
 
 const authStore = useAuthStore()
