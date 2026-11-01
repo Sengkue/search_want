@@ -69,6 +69,7 @@ class Settings:
     )
     ADSENSE_SLOT_INFEED: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_INFEED", "6642734194")
     ADSENSE_SLOT_BANNER: str = os.getenv("SEARCH_WANT_ADSENSE_SLOT_BANNER", "8750022785")
+    SITE_URL: str = os.getenv("SEARCH_WANT_SITE_URL", "").strip().rstrip("/")
 
     def has_strong_secret_key(self) -> bool:
         key = (self.SECRET_KEY or "").strip()
