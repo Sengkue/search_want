@@ -81,3 +81,32 @@ def sitemap_xml(request: Request, db: Session = Depends(get_db)) -> Response:
         media_type="application/xml; charset=utf-8",
         headers={"Cache-Control": "public, max-age=1800, s-maxage=1800"},
     )
+
+
+@router.get("/robots.txt", include_in_schema=False)
+def robots_txt(request: Request) -> Response:
+    """Dynamic robots.txt welcoming Googlebot & Mediapartners-Google and pointing to /sitemap.xml."""
+    origin = _resolve_site_origin(request)
+    body = (
+        "# Search-Want Robots & Google AdSense Crawler Policy\n"
+        "User-agent: Mediapartners-Google\n"
+        "Allow: /\n\n"
+        "User-agent: Googlebot\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+        "Disallow: /shops/mine\n"
+        "Disallow: /login\n"
+        "Disallow: /api/\n\n"
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin/\n"
+        "Disallow: /shops/mine\n"
+        "Disallow: /login\n"
+        "Disallow: /api/\n\n"
+        f"Sitemap: {origin}/sitemap.xml\n"
+    )
+    return Response(
+        content=body,
+        media_type="text/plain; charset=utf-8",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
