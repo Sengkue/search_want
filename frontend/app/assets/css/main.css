@@ -463,3 +463,370 @@ textarea::placeholder,
     height: 38px !important;
   }
 }
+
+/* ==========================================================================
+   NATIVE-GRADE PILL SEARCH CAPSULE, PERFECT MOBILE SEARCH BUTTON &
+   SMART KEYBOARD-AWARE SYMPTOM SUGGESTION PANEL
+   ========================================================================== */
+.sw-hero-search-card {
+  overflow: visible !important;
+  position: relative;
+  z-index: 25;
+}
+
+.sw-search-wrapper {
+  position: relative;
+  width: 100%;
+  z-index: 30;
+}
+
+.sw-search-capsule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 52px;
+  padding: 5px 5px 5px 8px;
+  border-radius: 999px;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.22s ease,
+    background-color 0.2s ease,
+    transform 0.18s ease;
+}
+
+.v-theme--searchWantLight .sw-search-capsule {
+  background: #ffffff;
+  border: 1.5px solid rgba(26, 115, 232, 0.22);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.05),
+    0 1px 3px rgba(26, 115, 232, 0.06);
+}
+
+.v-theme--searchWantDark .sw-search-capsule {
+  background: rgba(15, 23, 42, 0.94);
+  border: 1.5px solid rgba(96, 165, 250, 0.28);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.v-theme--searchWantLight .sw-search-capsule.is-focused {
+  border-color: #1a73e8;
+  box-shadow:
+    0 0 0 4px rgba(26, 115, 232, 0.15),
+    0 10px 26px rgba(26, 115, 232, 0.14);
+}
+
+.v-theme--searchWantDark .sw-search-capsule.is-focused {
+  border-color: #60a5fa;
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.24),
+    0 10px 28px rgba(0, 0, 0, 0.48);
+}
+
+.sw-search-lead-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.v-theme--searchWantLight .sw-search-lead-icon {
+  background: rgba(26, 115, 232, 0.1);
+  color: #1a73e8;
+}
+
+.v-theme--searchWantDark .sw-search-lead-icon {
+  background: rgba(96, 165, 250, 0.16);
+  color: #60a5fa;
+}
+
+.sw-search-capsule.is-focused .sw-search-lead-icon {
+  transform: scale(1.05);
+}
+
+.v-theme--searchWantLight .sw-search-capsule.is-focused .sw-search-lead-icon {
+  background: rgba(26, 115, 232, 0.16);
+}
+
+.v-theme--searchWantDark .sw-search-capsule.is-focused .sw-search-lead-icon {
+  background: rgba(96, 165, 250, 0.24);
+}
+
+.sw-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  padding: 2px 2px;
+  /* 16px prevents iOS Safari & Android mobile WebViews from force-zooming on focus */
+  font-size: 16px !important;
+  font-weight: 500;
+  line-height: 1.45 !important;
+  color: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.v-theme--searchWantLight .sw-search-input {
+  color: #0f172a;
+}
+
+.v-theme--searchWantDark .sw-search-input {
+  color: #f8fafc;
+}
+
+.sw-search-input::placeholder {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: rgba(100, 116, 139, 0.78);
+}
+
+.v-theme--searchWantDark .sw-search-input::placeholder {
+  color: rgba(148, 163, 184, 0.72);
+}
+
+/* Hide browser's built-in search cancel icon since we render our own clean pill clear button */
+.sw-search-input::-webkit-search-decoration,
+.sw-search-input::-webkit-search-cancel-button,
+.sw-search-input::-webkit-search-results-button,
+.sw-search-input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.sw-search-clear-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(100, 116, 139, 0.78);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.v-theme--searchWantDark .sw-search-clear-btn {
+  color: rgba(148, 163, 184, 0.82);
+}
+
+.sw-search-clear-btn:hover {
+  background: rgba(100, 116, 139, 0.12);
+  color: #ef4444;
+}
+
+.sw-search-clear-btn:active {
+  transform: scale(0.9);
+}
+
+/* Signature Elevated Gradient Pill Search Button */
+.sw-search-submit-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 20px 0 16px;
+  border-radius: 999px;
+  border: none;
+  color: #ffffff !important;
+  font-size: 0.9rem;
+  font-weight: 700 !important;
+  line-height: 1.3;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(135deg, #2563eb 0%, #1a73e8 52%, #0284c7 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 4px 12px rgba(26, 115, 232, 0.34);
+  transition:
+    transform 0.16s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.sw-search-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.06);
+  transform: translateY(-0.5px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    0 6px 16px rgba(26, 115, 232, 0.44);
+}
+
+.sw-search-submit-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  box-shadow: 0 2px 7px rgba(26, 115, 232, 0.28);
+}
+
+.sw-search-submit-btn:disabled {
+  opacity: 0.88;
+  cursor: wait;
+}
+
+/* Floating Live Symptom & Quick-Search Dropdown (while keyboard/focus is active) */
+.sw-search-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 7px);
+  z-index: 80;
+  border-radius: 18px;
+  overflow: hidden;
+  animation: swSearchDropdownIn 0.16s cubic-bezier(0.2, 0.85, 0.3, 1);
+}
+
+.v-theme--searchWantLight .sw-search-dropdown {
+  background: rgba(255, 255, 255, 0.99);
+  border: 1px solid rgba(26, 115, 232, 0.18);
+  box-shadow:
+    0 14px 36px rgba(15, 23, 42, 0.14),
+    0 4px 12px rgba(26, 115, 232, 0.08);
+}
+
+.v-theme--searchWantDark .sw-search-dropdown {
+  background: rgba(15, 23, 42, 0.98);
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.55),
+    0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes swSearchDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.sw-search-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.sw-keyboard-dismiss-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.v-theme--searchWantLight .sw-keyboard-dismiss-pill {
+  background: rgba(26, 115, 232, 0.1);
+  color: #1a73e8;
+}
+
+.v-theme--searchWantDark .sw-keyboard-dismiss-pill {
+  background: rgba(96, 165, 250, 0.18);
+  color: #93c5fd;
+}
+
+.sw-keyboard-dismiss-pill:active {
+  transform: scale(0.95);
+}
+
+.sw-search-suggest-list {
+  max-height: 255px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px;
+}
+
+.sw-search-suggest-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+}
+
+.v-theme--searchWantLight .sw-search-suggest-item:hover,
+.v-theme--searchWantLight .sw-search-suggest-item:active {
+  background: rgba(26, 115, 232, 0.07);
+}
+
+.v-theme--searchWantDark .sw-search-suggest-item:hover,
+.v-theme--searchWantDark .sw-search-suggest-item:active {
+  background: rgba(96, 165, 250, 0.13);
+}
+
+.sw-suggest-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile-tuned capsule & dropdown proportions (< 960px) */
+@media (max-width: 959.98px) {
+  .sw-search-capsule {
+    height: 46px;
+    padding: 4px 4px 4px 6px;
+    gap: 6px;
+  }
+
+  .sw-search-lead-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sw-search-input::placeholder {
+    font-size: 0.82rem;
+  }
+
+  .sw-search-clear-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .sw-search-submit-btn {
+    height: 38px;
+    padding: 0 15px 0 12px;
+    gap: 4px;
+    font-size: 0.83rem;
+  }
+
+  .sw-search-suggest-list {
+    /* Fits comfortably above mobile virtual keyboard without clipping */
+    max-height: 205px;
+  }
+}
