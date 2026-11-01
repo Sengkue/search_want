@@ -75,3 +75,13 @@
   </v-container>
 </template>
 
+<script setup lang="ts">
+const { usePageSeo } = useSeo()
+usePageSeo({
+  title: 'ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ ແລະ ການໂຄສະນາ — Search-Want',
+  description:
+    'ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ, ການນຳໃຊ້ພິກັດ GPS, ຄຸກກີ້ໂຄສະນາ Google AdSense ແລະ ການກວດສອບຂໍ້ມູນຮ້ານເທິງແພລດຟອມ Search-Want.',
+  path: '/privacy',
+})
+</script>
+

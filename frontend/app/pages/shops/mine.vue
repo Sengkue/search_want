@@ -236,6 +236,14 @@ import { useShopsStore } from '~/stores/shops'
 const { statusLabel } = useLabels()
 const authStore = useAuthStore()
 const shopsStore = useShopsStore()
+const { usePageSeo } = useSeo()
+
+usePageSeo({
+  title: 'ຮ້ານຂອງຂ້ອຍ — Search-Want',
+  description: 'ຈັດການຂໍ້ມູນຮ້ານ ແລະ ຕິດຕາມສະຖານະການອະນຸມັດຮ້ານຂອງທ່ານເທິງ Search-Want.',
+  path: '/shops/mine',
+  noindex: true,
+})
 
 const editDialog = ref(false)
 const savingEdit = ref(false)

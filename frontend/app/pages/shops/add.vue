@@ -250,6 +250,15 @@ const submitting = ref(false)
 const locatingPin = ref(false)
 const errorMsg = ref('')
 
+const { usePageSeo } = useSeo()
+usePageSeo({
+  title: 'ເພີ່ມຮ້ານສ້ອມແປງ ແລະ ປັກໝຸດທີ່ຕັ້ງຮ້ານຟຣີເທິງແຜນທີ່ — Search-Want',
+  description:
+    'ເຈົ້າຂອງອູ່ລົດ, ຮ້ານສ້ອມແປງ ຫຼື ຊ່າງບໍລິການ ສາມາດລົງທະບຽນເພີ່ມຮ້ານ ແລະ ປັກໝຸດ GPS ເທິງແຜນທີ່ Search-Want ຟຣີ ເພື່ອໃຫ້ລູກຄ້າໃກ້ຄຽງຄົ້ນຫາພົບ ແລະ ໂທຫາໄດ້ທັນທີ.',
+  path: '/shops/add',
+  keywords: 'ເພີ່ມຮ້ານຟຣີ, ປັກໝຸດຮ້ານເທິງແຜນທີ່, ລົງທະບຽນຮ້ານສ້ອມແປງ, Search-Want',
+})
+
 const form = reactive({
   category_id: 1,
   name: '',

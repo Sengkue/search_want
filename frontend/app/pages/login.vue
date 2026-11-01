@@ -150,6 +150,14 @@ import { isSafeInternalPath, useAuthStore } from '~/stores/auth'
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+const { usePageSeo } = useSeo()
+
+usePageSeo({
+  title: 'ເຂົ້າສູ່ລະບົບ / ສ້າງບັນຊີ — Search-Want',
+  description: 'ເຂົ້າສູ່ລະບົບ ຫຼື ສ້າງບັນຊີເພື່ອເພີ່ມ ແລະ ຈັດການຮ້ານສ້ອມແປງຂອງທ່ານເທິງແຜນທີ່ Search-Want.',
+  path: '/login',
+  noindex: true,
+})
 
 const tab = ref<'login' | 'register'>('login')
 const showPass = ref(false)

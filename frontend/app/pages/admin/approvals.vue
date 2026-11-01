@@ -835,6 +835,14 @@ const { adsenseConfig, loadAdSenseConfig, updateAdSenseConfig } = useAdSense()
 const authStore = useAuthStore()
 const shopsStore = useShopsStore()
 const route = useRoute()
+const { usePageSeo } = useSeo()
+
+usePageSeo({
+  title: 'ຈັດການອະນຸມັດຮ້ານ & ຄວາມປອດໄພລະບົບ — Search-Want Admin',
+  description: 'ໜ້າຈັດການອະນຸມັດຮ້ານ ແລະ ສິດຜູ້ໃຊ້ລະດັບຜູ້ດູແລລະບົບ.',
+  path: '/admin/approvals',
+  noindex: true,
+})
 
 const loading = ref(false)
 const savingAdSense = ref(false)

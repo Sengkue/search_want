@@ -553,11 +553,30 @@ import { useShopsStore } from '~/stores/shops'
 const authStore = useAuthStore()
 const shopsStore = useShopsStore()
 const { requestMapPinPickCount } = useGps()
+const { siteOrigin, usePageSeo } = useSeo()
 const route = useRoute()
 const router = useRouter()
 const { smAndDown } = useDisplay()
 
 const mobileViewMode = ref<'split' | 'map' | 'list'>('split')
+
+const seoFaqs = [
+  {
+    question: 'ລົດເສຍກາງທາງ, ລົດສະຕາດບໍ່ຕິດ ຫຼື ຢາງລົດແບນ ຈະຊອກຊ່າງໃກ້ທີ່ສຸດໄດ້ແນວໃດ?',
+    answer:
+      'ພຽງແຕ່ພິມອາການ ເຊັ່ນ "ລົດສະຕາດບໍ່ຕິດ", "ຢາງລົດແບນ" ຫຼື "ຕ້ອງການລົດລາກ" ໃນຊ່ອງຄົ້ນຫາ Search-Want ແລ້ວກົດ "ໃຊ້ GPS ປັດຈຸບັນ" ລະບົບຈະຄຳນວນໄລຍະທາງກິໂລແມັດ ແລະ ຈັດລຽງອູ່ລົດ ຫຼື ລົດລາກສຸກເສີນ 24 ຊົ່ວໂມງທີ່ໃກ້ທ່ານທີ່ສຸດທັນທີ ພ້ອມປຸ່ມກົດໂທ ແລະ ນຳທາງ Google Maps.',
+  },
+  {
+    question: 'Search-Want ຮອງຮັບຊ່າງ ແລະ ຮ້ານສ້ອມແປງປະເພດໃດແດ່?',
+    answer:
+      'ຮອງຮັບຄົບທຸກບັນຫາປະຈຳວັນ: ອູ່ສ້ອມແປງລົດໃຫຍ່, ຮ້ານແປງລົດຈັກ, ປ່ຽນຢາງ ແລະ ແບັດເຕີຣີ້ເຄື່ອນທີ່, ລົດລາກກູ້ໄພສຸກເສີນ 24 ຊມ., ຮ້ານແປງໂທລະສັບມືຖື ແລະ ຄອມພິວເຕີ, ຊ່າງປະປາທໍ່ນ້ຳຮົ່ວ, ຊ່າງໄຟຟ້າ ແລະ ລ້າງ-ສ້ອມແອເຢັນ ລວມເຖິງຄລີນິກ ແລະ ຮ້ານຂາຍຍາກາງຄືນ.',
+  },
+  {
+    question: 'ເຈົ້າຂອງຮ້ານ ຫຼື ຊ່າງສ້ອມແປງ ສາມາດເພີ່ມຮ້ານເຂົ້າແຜນທີ່ Search-Want ຟຣີບໍ່?',
+    answer:
+      'ຟຣີ 100%! ເຈົ້າຂອງຮ້ານສາມາດກົດເມນູ "ເພີ່ມຮ້ານຂອງຂ້ອຍ" ເພື່ອປ້ອນຊື່ຮ້ານ, ອາການທີ່ຮັບແປງ, ເບີໂທ ແລະ ປັກໝຸດພິກັດ GPS ເທິງແຜນທີ່ດ້ວຍຕົນເອງ. ຫຼັງຈາກຜູ້ດູແລລະບົບກວດສອບ ແລະ ກົດອະນຸມັດແລ້ວ ຮ້ານຂອງທ່ານຈະຂຶ້ນແຜນທີ່ ແລະ ຕິດການຄົ້ນຫາທັນທີ.',
+  },
+]
 
 const RECENT_SEARCH_STORAGE_KEY = 'sw_recent_problem_searches_v1'
 const searchInputRef = ref<HTMLInputElement | null>(null)
@@ -923,11 +942,130 @@ watch(requestMapPinPickCount, () => {
   )
 })
 
+function syncFiltersFromRouteQuery() {
+  const qParam = String(route.query.q || route.query.problem || '').trim()
+  if (qParam) {
+    shopsStore.problemQuery = qParam
+  }
+  if (route.query.category !== undefined) {
+    const catNum = Number(route.query.category)
+    shopsStore.selectedCategoryId = Number.isInteger(catNum) && catNum > 0 ? catNum : null
+  }
+}
+
+syncFiltersFromRouteQuery()
+
+// Server-Side Rendered (SSR) parallel pre-fetch: delivers 100% pre-rendered Lao shop HTML to Googlebot & instant LCP!
+await useAsyncData('sw-home-discovery', async () => {
+  await Promise.all([
+    shopsStore.loadCategoriesAndSymptoms(),
+    shopsStore.searchNearby(false),
+  ])
+  return true
+})
+
+const activeCategoryObj = computed(() =>
+  shopsStore.selectedCategoryId !== null
+    ? shopsStore.categories.find((c) => c.id === shopsStore.selectedCategoryId) || null
+    : null,
+)
+
+usePageSeo({
+  title: () => {
+    if (trimmedProblemQuery.value) {
+      return `ຄົ້ນຫາ "${trimmedProblemQuery.value}" — ຊ່າງ ແລະ ຮ້ານສ້ອມແປງໃກ້ຄຽງ | Search-Want`
+    }
+    if (activeCategoryObj.value) {
+      return `${activeCategoryObj.value.name} ໃກ້ຄຽງ (${nearbyShops.value.length} ຮ້ານ) — Search-Want`
+    }
+    return 'Search-Want — ຄົ້ນຫາຮ້ານສ້ອມແປງ, ອູ່ລົດ ແລະ ຊ່າງສຸກເສີນໃກ້ຕົວທ່ານ (GPS)'
+  },
+  description: () => {
+    if (activeCategoryObj.value) {
+      return `ລວມຮ້ານ ${activeCategoryObj.value.name} ທີ່ຜ່ານການອະນຸມັດແລ້ວໃກ້ຕົວທ່ານ: ${activeCategoryObj.value.description}. ເບິ່ງໄລຍະທາງ GPS, ກົດໂທ ແລະ ນຳທາງໄດ້ທັນທີ.`
+    }
+    return 'ມີບັນຫາລົດສະຕາດບໍ່ຕິດ, ຢາງລົດແບນ, ລົດລາກ 24 ຊມ., ໂທລະສັບຈໍແຕກ, ທໍ່ນ້ຳຮົ່ວ ຫຼື ແອບໍ່ເຢັນ? ພິມບັນຫາເພື່ອຊອກຫາຊ່າງ ແລະ ຮ້ານສ້ອມແປງທີ່ອະນຸມັດແລ້ວໃກ້ຕົວທ່ານເທິງແຜນທີ່ GPS ທັນທີ.'
+  },
+  path: () =>
+    activeCategoryObj.value ? `/?category=${activeCategoryObj.value.id}` : '/',
+  keywords: () =>
+    [
+      'ຮ້ານສ້ອມແປງໃກ້ຂ້ອຍ',
+      'ອູ່ແປງລົດ ວຽງຈັນ',
+      'ລົດສະຕາດບໍ່ຕິດ',
+      'ຢາງລົດແບນ',
+      'ລົດລາກສຸກເສີນ 24 ຊົ່ວໂມງ',
+      'ຮ້ານແປງໂທລະສັບ',
+      'ຊ່າງປະປາ',
+      'ຊ່າງແປງແອ',
+      ...shopsStore.categories.map((c) => c.name),
+    ].join(', '),
+  jsonLd: () => [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      '@id': `${siteOrigin.value}/#website`,
+      name: 'Search-Want',
+      alternateName: 'Search-Want ຄົ້ນຫາຮ້ານສ້ອມແປງໃກ້ທ່ານ',
+      url: `${siteOrigin.value}/`,
+      inLanguage: 'lo-LA',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${siteOrigin.value}/?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      name: activeCategoryObj.value
+        ? `ຮ້ານ ${activeCategoryObj.value.name} ທີ່ອະນຸມັດແລ້ວ`
+        : 'ຮ້ານສ້ອມແປງ ແລະ ຊ່າງບໍລິການທີ່ອະນຸມັດແລ້ວໃກ້ຄຽງ',
+      numberOfItems: nearbyShops.value.length,
+      itemListElement: nearbyShops.value.slice(0, 15).map((s, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        url: `${siteOrigin.value}/shops/${s.id}`,
+        name: s.name,
+      })),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: seoFaqs.map((f) => ({
+        '@type': 'Question',
+        name: f.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: f.answer,
+        },
+      })),
+    },
+  ],
+})
+
+watch(
+  () => [route.query.q, route.query.problem, route.query.category],
+  async ([newQ, newProb, newCat], [oldQ, oldProb, oldCat]) => {
+    if (newQ === oldQ && newProb === oldProb && newCat === oldCat) return
+    syncFiltersFromRouteQuery()
+    await shopsStore.searchNearby(false)
+  },
+)
+
 onMounted(async () => {
   loadRecentSearches()
   document.addEventListener('pointerdown', handleDocumentPointerDown, { passive: true })
-  await shopsStore.loadCategoriesAndSymptoms()
-  await shopsStore.searchNearby(false)
+  // Only fetch on client mount if SSR payload wasn't already hydrated (e.g. Capacitor Android SPA mode)
+  if (!shopsStore.nearbyData || shopsStore.categories.length === 0) {
+    await Promise.all([
+      shopsStore.loadCategoriesAndSymptoms(),
+      shopsStore.searchNearby(false),
+    ])
+  }
   if (route.query.autoGps === '1') {
     router.replace({ query: { ...route.query, autoGps: undefined } })
     await handleLocateMe()
