@@ -65,8 +65,10 @@ if (apiBase) {
 }
 
 // ---------- 2. Build the static web app ----------
-log('Building web app (nuxt generate)…')
-run('npm', ['run', 'generate'], { env: { ...process.env, NUXT_PUBLIC_API_BASE: apiBase } })
+log('Building web app (nuxt generate with NUXT_SSR=false for Capacitor APK)…')
+run('npm', ['run', 'generate'], {
+  env: { ...process.env, NUXT_PUBLIC_API_BASE: apiBase, NUXT_SSR: 'false' },
+})
 
 // ---------- 3. Sync into the Android project ----------
 log('Syncing web assets into the Android project (cap sync)…')

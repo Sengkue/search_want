@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import 'leaflet/dist/leaflet.css'
 import type { ShopOut } from '~/types/api'
 
 const props = withDefaults(
