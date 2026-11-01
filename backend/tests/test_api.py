@@ -620,7 +620,8 @@ def test_dynamic_seo_sitemap_and_robots_only_expose_approved_shops(
         json={"email": "admin@searchwant.com", "password": "admin123"},
     )
     admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
-    pending_shops = client.get("/api/admin/shops?status_filter=PENDING", headers=admin_headers).json()
+    pending_shops = client.get("/api/admin/shops?status=PENDING", headers=admin_headers).json()
     assert len(pending_shops) >= 1
     for p_shop in pending_shops:
-        assert f"/shops/{p_shop['id']}</loc>" not in sitemap.text
+        assert p_shop["status"] == "PENDING"
+        assert f"<loc>http://searchwant.la/shops/{p_shop['id']}</loc>" not in sitemap.text
