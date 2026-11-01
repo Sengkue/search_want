@@ -65,7 +65,7 @@
             class="sw-search-input"
             :placeholder="
               smAndDown
-                ? 'ພິມອາການ ເຊັ່ນ: ລົດສະຕາດບໍ່ຕິດ, ຢາງຮົ່ວ...'
+                ? 'ພິມອາການ ເຊັ່ນ: ລົດສະຕາດບໍ່ຕິດ...'
                 : 'ພິມອາການ ຫຼື ບັນຫາ ເຊັ່ນ: ລົດສະຕາດບໍ່ຕິດ, ຢາງລົດແບນ, ທໍ່ນ້ຳຮົ່ວ, ແອບໍ່ເຢັນ...'
             "
             aria-label="ຄົ້ນຫາບັນຫາ ຫຼື ອາການເປ່ເພ"
@@ -538,28 +538,28 @@ const currentRadiusLabel = computed(() => {
 const quickProblems = [
   {
     label: 'ລົດສະຕາດບໍ່ຕິດ',
-    query: 'ລົດຂອງຂ້ອຍສະຕາດບໍ່ຕິດ ແລະ ບໍ່ຮູ້ຈະແກ້ແນວໃດ',
+    query: 'ລົດສະຕາດບໍ່ຕິດ',
     subtitle: 'ໝໍ້ໄຟໝົດ, ໄດສະຕາດ ຫຼື ລະບົບໄຟລົດ',
     icon: 'mdi-car-off',
     color: '#1a73e8',
   },
   {
     label: 'ຢາງລົດແບນ',
-    query: 'ຢາງລົດແບນ ຖືກແທງເທິງທາງ',
+    query: 'ຢາງລົດແບນ',
     subtitle: 'ປ່ຽນຢາງ, ຈອດຢາງ ຫຼື ຊ່າງນອກສະຖານທີ່',
     icon: 'mdi-car-tire-alert',
     color: '#ea580c',
   },
   {
     label: 'ຕ້ອງການລົດລາກ',
-    query: 'ລົດເສຍກາງທາງ ຕ້ອງການລົດລາກດ່ວນ',
+    query: 'ລົດເສຍກາງທາງ ຕ້ອງການລົດລາກ',
     subtitle: 'ບໍລິການລົດລາກ ແລະ ກູ້ໄພສຸກເສີນ 24 ຊມ.',
     icon: 'mdi-tow-truck',
     color: '#dc2626',
   },
   {
     label: 'ເຄື່ອງມີຄວັນ',
-    query: 'ເຄື່ອງຍົນມີຄວັນ ແລະ ຮ້ອນເກີນ',
+    query: 'ເຄື່ອງຍົນມີຄວັນ ຮ້ອນເກີນ',
     subtitle: 'ໝໍ້ນ້ຳແຫ້ງ ຫຼື ເຄື່ອງຍົນຮ້ອນຈັດ',
     icon: 'mdi-alert-octagon-outline',
     color: '#d97706',
@@ -573,14 +573,14 @@ const quickProblems = [
   },
   {
     label: 'ທໍ່ນ້ຳຮົ່ວ',
-    query: 'ທໍ່ນ້ຳໃນຫ້ອງນ້ຳຮົ່ວ ນ້ຳຮົ່ວ',
+    query: 'ທໍ່ນ້ຳຮົ່ວ',
     subtitle: 'ຊ່າງປະປາ, ທໍ່ແຕກ, ປັ໊ມນ້ຳບໍ່ດູດ',
     icon: 'mdi-pipe-leak',
     color: '#0284c7',
   },
   {
     label: 'ແອບໍ່ເຢັນ',
-    query: 'ແອເຢັນບໍ່ເຢັນ ລົມອຸ່ນ',
+    query: 'ແອບໍ່ເຢັນ',
     subtitle: 'ລ້າງແອ, ເຕີມນ້ຳຢາແອບ້ານ ແລະ ຫ້ອງການ',
     icon: 'mdi-air-conditioner',
     color: '#0d9488',
@@ -740,6 +740,10 @@ function handleSearchFocus() {
   if (blurTimer) {
     clearTimeout(blurTimer)
     blurTimer = null
+  }
+  // Hide any active top toast so it never overlaps the search bar while typing on mobile
+  if (authStore.toast.show) {
+    authStore.toast.show = false
   }
   isSearchFocused.value = true
 

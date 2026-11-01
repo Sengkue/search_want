@@ -573,6 +573,7 @@ textarea::placeholder,
   font-size: 16px !important;
   font-weight: 500;
   line-height: 1.45 !important;
+  text-overflow: ellipsis;
   color: inherit;
   appearance: none;
   -webkit-appearance: none;
