@@ -33,10 +33,10 @@
             <div class="d-flex flex-wrap align-center ga-2 mb-1">
               <v-chip
                 size="small"
-                :color="shop.category_color || 'primary'"
-                variant="flat"
+                color="primary"
+                variant="tonal"
                 :prepend-icon="shop.category_icon"
-                class="text-white font-weight-bold"
+                class="font-weight-bold"
               >
                 {{ shop.category_name }}
               </v-chip>
