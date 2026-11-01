@@ -34,17 +34,30 @@ export const useShopsStore = defineStore('shops', () => {
 
   const myShops = ref<ShopOut[]>([])
   const loadingMyShops = ref<boolean>(false)
+  const categoriesLoadedAt = ref<number>(0)
+  let latestSearchSeq = 0
 
-  async function loadCategoriesAndSymptoms() {
+  async function loadCategoriesAndSymptoms(force = false) {
+    const now = Date.now()
+    if (
+      !force &&
+      categories.value.length > 0 &&
+      symptoms.value.length > 0 &&
+      now - categoriesLoadedAt.value < 5 * 60 * 1000
+    ) {
+      return
+    }
     const [cats, symp] = await Promise.all([
       apiFetch<CategoryOut[]>('/api/categories'),
       apiFetch<ProblemKeywordOut[]>('/api/categories/symptoms'),
     ])
     categories.value = cats
     symptoms.value = symp
+    categoriesLoadedAt.value = Date.now()
   }
 
   async function searchNearby(announce = false) {
+    const seq = ++latestSearchSeq
     loadingNearby.value = true
     try {
       const res = await apiFetch<NearbySearchResponse>('/api/shops/nearby', {
@@ -57,6 +70,8 @@ export const useShopsStore = defineStore('shops', () => {
           emergency_only: emergencyOnly.value ? 'true' : undefined,
         },
       })
+      // Discard out-of-order response if a newer search was already triggered
+      if (seq !== latestSearchSeq) return
       nearbyData.value = res
 
       if (res.shops.length > 0) {
@@ -89,7 +104,9 @@ export const useShopsStore = defineStore('shops', () => {
         'mdi-alert-circle-outline',
       )
     } finally {
-      loadingNearby.value = false
+      if (seq === latestSearchSeq) {
+        loadingNearby.value = false
+      }
     }
   }
 
@@ -138,7 +155,7 @@ export const useShopsStore = defineStore('shops', () => {
         },
       )
       authStore.showToast(resp.message, 'success', 'mdi-store-plus')
-      await loadCategoriesAndSymptoms()
+      await loadCategoriesAndSymptoms(true)
       await searchNearby(true)
     } catch (err: any) {
       authStore.showToast(

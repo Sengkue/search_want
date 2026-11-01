@@ -1,13 +1,14 @@
 <template>
   <v-card
-    class="sw-card-hover pa-3 pa-md-4 mb-2"
+    tag="article"
+    class="sw-card-hover sw-shop-card pa-3 pa-md-4 mb-2"
     :style="{
       border: selected ? '1.8px solid #1A73E8' : undefined,
       cursor: 'pointer',
     }"
     @click="$emit('select', shop.id)"
   >
-    <!-- Top Row: Icon + Name + Distance Pill -->
+    <!-- Top Row: Icon + Semantic H2 Crawl Link + Distance Pill -->
     <div class="d-flex align-start justify-space-between ga-2">
       <div class="d-flex align-center ga-2" style="min-width: 0; flex: 1">
         <v-avatar
@@ -21,9 +22,15 @@
 
         <div style="min-width: 0">
           <div class="d-flex flex-wrap align-center ga-1">
-            <span class="text-title-small font-weight-bold text-truncate">
-              {{ shop.name }}
-            </span>
+            <h2 class="text-title-small font-weight-bold text-truncate mb-0" style="line-height: 1.35">
+              <NuxtLink
+                :to="`/shops/${shop.id}`"
+                class="sw-shop-title-link"
+                @click.stop
+              >
+                {{ shop.name }}
+              </NuxtLink>
+            </h2>
             <v-chip
               v-if="shop.is_emergency_24h"
               color="error"
@@ -89,18 +96,29 @@
       </v-chip>
     </div>
 
-    <!-- Clean 3-Action Footer -->
-    <div class="d-flex align-center justify-space-between ga-2 pt-2 border-t" @click.stop>
-      <v-btn
-        variant="text"
-        color="primary"
-        size="small"
-        prepend-icon="mdi-crosshairs-gps"
-        class="px-2"
-        @click="$emit('focus-map', shop.id)"
-      >
-        ເບິ່ງເທິງແຜນທີ່
-      </v-btn>
+    <!-- Clean Action Footer -->
+    <div class="d-flex align-center justify-space-between ga-1 pt-2 border-t" @click.stop>
+      <div class="d-flex align-center ga-1">
+        <v-btn
+          variant="text"
+          color="primary"
+          size="small"
+          prepend-icon="mdi-crosshairs-gps"
+          class="px-2"
+          @click="$emit('focus-map', shop.id)"
+        >
+          ເບິ່ງແຜນທີ່
+        </v-btn>
+        <v-btn
+          variant="text"
+          color="secondary"
+          size="small"
+          :to="`/shops/${shop.id}`"
+          class="px-2"
+        >
+          ລາຍລະອຽດ
+        </v-btn>
+      </div>
 
       <div class="d-flex ga-1">
         <v-btn
