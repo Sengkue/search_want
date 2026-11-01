@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="pa-2 pa-sm-3 pa-md-5" style="max-width: 1520px">
     <!-- Compact, Friendly Problem Search Header with Signature Brand Icon & Ambient Surface -->
-    <v-card class="sw-hero-card pa-3 pa-md-4 mb-3">
+    <v-card class="sw-hero-card sw-hero-search-card pa-3 pa-md-4 mb-3">
       <!-- Top Title + 1-Tap GPS Pill -->
       <div class="d-flex align-center justify-space-between ga-2 mb-2">
         <div class="d-flex align-center ga-2" style="min-width: 0">
@@ -29,33 +29,207 @@
         </v-btn>
       </div>
 
-      <!-- Single-Line Unified Search Bar with Embedded Submit Button -->
-      <v-form @submit.prevent="runProblemSearch">
-        <v-text-field
-          v-model="shopsStore.problemQuery"
-          placeholder="ຕົວຢ່າງ: ລົດສະຕາດບໍ່ຕິດ, ຢາງລົດແບນ, ທໍ່ນ້ຳຮົ່ວ..."
-          prepend-inner-icon="mdi-magnify"
-          clearable
-          hide-details
-          bg-color="background"
-          class="mb-2"
-          @click:clear="clearProblemAndSearch"
+      <!-- Native-Grade Pill Search Capsule + Perfect Mobile Search Button + Smart Keyboard Autocomplete -->
+      <div ref="searchWrapperRef" class="sw-search-wrapper mb-2">
+        <form
+          class="sw-search-capsule"
+          :class="{
+            'is-focused': isSearchFocused,
+            'has-query': Boolean(trimmedProblemQuery),
+          }"
+          role="search"
+          @submit.prevent="submitSearchFromUi"
         >
-          <template #append-inner>
-            <v-btn
-              type="submit"
-              color="primary"
-              variant="flat"
-              size="small"
-              :loading="shopsStore.loadingNearby"
-              class="px-3"
-              @click="runProblemSearch"
+          <!-- Leading Search Icon Pill (Intentionally focuses input when tapped) -->
+          <button
+            type="button"
+            class="sw-search-lead-icon"
+            tabindex="-1"
+            aria-label="ແຕະເພື່ອພິມຄຳຄົ້ນຫາ"
+            @click="focusSearchInput"
+          >
+            <v-icon icon="mdi-magnify" :size="smAndDown ? 18 : 20" />
+          </button>
+
+          <!-- Native Search Input (16px font = zero mobile browser zoom; enterkeyhint="search" = native Search key) -->
+          <input
+            ref="searchInputRef"
+            v-model="shopsStore.problemQuery"
+            type="search"
+            inputmode="search"
+            enterkeyhint="search"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            class="sw-search-input"
+            :placeholder="
+              smAndDown
+                ? 'ພິມອາການ ເຊັ່ນ: ລົດສະຕາດບໍ່ຕິດ, ຢາງຮົ່ວ...'
+                : 'ພິມອາການ ຫຼື ບັນຫາ ເຊັ່ນ: ລົດສະຕາດບໍ່ຕິດ, ຢາງລົດແບນ, ທໍ່ນ້ຳຮົ່ວ, ແອບໍ່ເຢັນ...'
+            "
+            aria-label="ຄົ້ນຫາບັນຫາ ຫຼື ອາການເປ່ເພ"
+            @focus="handleSearchFocus"
+            @blur="handleInputBlur"
+            @keydown.esc.prevent="dismissMobileKeyboard"
+          />
+
+          <!-- Clean 1-Tap Clear Button (Never triggers unwanted mobile keyboard popup) -->
+          <button
+            v-if="shopsStore.problemQuery.length > 0"
+            type="button"
+            class="sw-search-clear-btn"
+            aria-label="ລ້າງຄຳຄົ້ນຫາ"
+            title="ລ້າງຄຳຄົ້ນຫາ"
+            @mousedown.prevent
+            @click.stop="clearProblemAndSearch"
+          >
+            <v-icon icon="mdi-close-circle" :size="smAndDown ? 18 : 19" />
+          </button>
+
+          <!-- Signature Gradient Pill Search Button (Never focuses input; immediately dismisses mobile keyboard!) -->
+          <button
+            type="submit"
+            class="sw-search-submit-btn"
+            :disabled="shopsStore.loadingNearby"
+            aria-label="ຄົ້ນຫາຮ້ານໃກ້ຄຽງ"
+            @mousedown.prevent
+          >
+            <v-progress-circular
+              v-if="shopsStore.loadingNearby"
+              indeterminate
+              :size="smAndDown ? 15 : 16"
+              :width="2.2"
+              color="white"
+            />
+            <v-icon v-else icon="mdi-magnify" :size="smAndDown ? 16 : 18" />
+            <span>ຄົ້ນຫາ</span>
+          </button>
+        </form>
+
+        <!-- Smart Floating Symptom & Quick-Search Panel while Keyboard / Input is Focused -->
+        <div
+          v-if="isSearchFocused"
+          class="sw-search-dropdown"
+          role="listbox"
+          aria-label="ຄຳແນະນຳການຄົ້ນຫາອາການ"
+        >
+          <div class="sw-search-dropdown-header">
+            <span class="text-body-small font-weight-bold text-medium-emphasis d-flex align-center ga-1">
+              <v-icon
+                :icon="trimmedProblemQuery ? 'mdi-Creation' : 'mdi-lightning-bolt-outline'"
+                size="15"
+                color="primary"
+              />
+              <span>
+                {{
+                  trimmedProblemQuery
+                    ? 'ອາການທີ່ກ່ຽວຂ້ອງ — ແຕະເພື່ອຄົ້ນຫາທັນທີ'
+                    : 'ອາການຍອດນິຍົມ — ແຕະເພື່ອຄົ້ນຫາໂດຍບໍ່ຕ້ອງພິມ'
+                }}
+              </span>
+            </span>
+
+            <button
+              type="button"
+              class="sw-keyboard-dismiss-pill"
+              @mousedown.prevent
+              @click.stop="dismissMobileKeyboard"
             >
-              ຄົ້ນຫາ
-            </v-btn>
-          </template>
-        </v-text-field>
-      </v-form>
+              <v-icon icon="mdi-keyboard-close" size="14" />
+              <span>ປິດ</span>
+            </button>
+          </div>
+
+          <!-- Recent Searches Strip (when input is empty and user has prior searches) -->
+          <div
+            v-if="!trimmedProblemQuery && recentSearches.length > 0"
+            class="px-3 pt-2 pb-1 border-b"
+          >
+            <div class="d-flex align-center justify-space-between mb-1">
+              <span class="text-body-small text-medium-emphasis font-weight-medium" style="font-size: 11px">
+                ຄົ້ນຫາຫຼ້າສຸດ
+              </span>
+              <button
+                type="button"
+                class="text-body-small text-primary font-weight-bold bg-transparent border-0 pa-0"
+                style="font-size: 11px; cursor: pointer"
+                @mousedown.prevent
+                @click.stop="clearRecentSearches"
+              >
+                ລ້າງປະຫວັດ
+              </button>
+            </div>
+            <div class="sw-chip-rail pb-1">
+              <v-chip
+                v-for="recent in recentSearches"
+                :key="recent"
+                size="x-small"
+                variant="tonal"
+                color="primary"
+                prepend-icon="mdi-history"
+                @mousedown.prevent
+                @click.stop="selectSuggestion(recent)"
+              >
+                {{ recent }}
+              </v-chip>
+            </div>
+          </div>
+
+          <div class="sw-search-suggest-list">
+            <!-- Direct Submit Row for User's Custom Typed Text -->
+            <button
+              v-if="trimmedProblemQuery"
+              type="button"
+              class="sw-search-suggest-item"
+              @mousedown.prevent
+              @click.stop="submitSearchFromUi"
+            >
+              <span
+                class="sw-suggest-icon-badge"
+                style="background: rgba(26, 115, 232, 0.14); color: #1a73e8"
+              >
+                <v-icon icon="mdi-magnify" size="18" />
+              </span>
+              <span class="flex-grow-1" style="min-width: 0">
+                <span class="d-block text-body-medium font-weight-bold text-primary text-truncate">
+                  ຄົ້ນຫາ "{{ trimmedProblemQuery }}" ທັນທີ
+                </span>
+                <span class="d-block text-body-small text-medium-emphasis">
+                  ຈັບຄູ່ຊ່າງ ແລະ ຮ້ານສ້ອມແປງໃກ້ຕົວທ່ານ
+                </span>
+              </span>
+              <v-icon icon="mdi-arrow-right-circle" color="primary" size="18" />
+            </button>
+
+            <!-- Live Matched Symptoms & Curated Quick Problems -->
+            <button
+              v-for="item in liveSuggestions"
+              :key="item.key"
+              type="button"
+              class="sw-search-suggest-item"
+              @mousedown.prevent
+              @click.stop="selectSuggestion(item.query)"
+            >
+              <span
+                class="sw-suggest-icon-badge"
+                :style="{ backgroundColor: `${item.color}1c`, color: item.color }"
+              >
+                <v-icon :icon="item.icon" size="17" />
+              </span>
+              <span class="flex-grow-1" style="min-width: 0">
+                <span class="d-block text-body-medium font-weight-bold text-truncate">
+                  {{ item.title }}
+                </span>
+                <span class="d-block text-body-small text-medium-emphasis text-truncate">
+                  {{ item.subtitle }}
+                </span>
+              </span>
+              <v-icon icon="mdi-north-west" size="15" class="text-medium-emphasis flex-shrink-0" />
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- Single-Row Swipeable Filter & Quick-Problem Chips -->
       <div class="sw-chip-rail mb-2">
