@@ -47,6 +47,7 @@
           to="/admin/approvals?tab=ADSENSE"
           class="sw-gdn-corner-btn text-decoration-none"
           title="ຕັ້ງຄ່າ Google AdSense (Super Admin)"
+          aria-label="ຕັ້ງຄ່າ Google AdSense"
         >
           ⚙
         </NuxtLink>
@@ -58,9 +59,10 @@
               type="button"
               class="sw-gdn-corner-btn"
               title="ຂໍ້ມູນ Google AdSense"
+              aria-label="ຂໍ້ມູນ Google AdSense"
             >
-              <svg width="11" height="11" viewBox="0 0 15 15" fill="none">
-                <path d="M7.5 1.5a6 6 0 100 12 6 6 0 000-12zm0 2.4a.85.85 0 110 1.7.85.85 0 010-1.7zm1 7.1h-2V9.9h.45V7.1H6.5V6h1.55v3.9h.45V11z" fill="#00aecd" />
+              <svg width="11" height="11" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+                <path d="M7.5 1.5a6 6 0 100 12 6 6 0 000-12zm0 2.4a.85.85 0 110 1.7.85.85 0 010-1.7zm1 7.1h-2V9.9h.45V7.1H6.5V6h1.55v3.9h.45V11z" fill="#0369a1" />
               </svg>
             </button>
           </template>
@@ -82,6 +84,7 @@
           type="button"
           class="sw-gdn-corner-btn"
           title="ປິດໂຄສະນານີ້"
+          aria-label="ປິດໂຄສະນານີ້"
           @click="dismissedByUser = true"
         >
           ✕
@@ -144,6 +147,7 @@
             class="sw-round-arrow-btn flex-shrink-0"
             :style="{ background: activeAd.accentColor }"
             :title="activeAd.cta"
+            :aria-label="activeAd.cta"
             @click="cycleNextAd"
           >
             <v-icon icon="mdi-chevron-right" color="white" size="22" />
@@ -295,6 +299,7 @@ const {
   effectiveSlotBanner,
   hasValidClientId,
   isAdAllowedOnRoute,
+  isLocalOrPrivateHost,
 } = useAdSense()
 
 const insEl = ref<HTMLElement | null>(null)
@@ -308,8 +313,16 @@ const slotId = computed(() =>
   props.placement === 'infeed' ? effectiveSlotInfeed.value : effectiveSlotBanner.value,
 )
 
-const canMountRealGoogleTag = computed(() => hasValidClientId.value && Boolean(slotId.value))
-const showRichVisualAd = computed(() => adsenseConfig.value.test_mode)
+const canMountRealGoogleTag = computed(
+  () =>
+    hasValidClientId.value &&
+    Boolean(slotId.value) &&
+    !adsenseConfig.value.test_mode &&
+    !isLocalOrPrivateHost.value,
+)
+const showRichVisualAd = computed(
+  () => adsenseConfig.value.test_mode || isLocalOrPrivateHost.value,
+)
 
 const shouldDisplay = computed(() => {
   if (!import.meta.client) return false
@@ -362,7 +375,7 @@ const allCreatives: RichAdCreative[] = [
     visualSub: 'ໂບນັດ 20GB ສຳລັບລູກຄ້າໃໝ່',
     icon: 'mdi-Signal-5g'.toLowerCase().replace('signal-5g', 'access-point-network'),
     gradient: 'linear-gradient(135deg, #1E3A8A 0%, #0284C7 55%, #38BDF8 100%)',
-    accentColor: '#0284C7',
+    accentColor: '#0369A1',
     btnColor: 'primary',
     headline: 'ແພັກເກັດເນັດມືຖື 5G ຄວາມໄວສູງ — ເປີດແຜນທີ່ GPS & ດູໜັງ 4K ບໍ່ສະດຸດ!',
     description: 'ສະໝັກມື້ນີ້ຮັບດາຕ້າໂບນັດຟຣີ 20GB ໃຊ້ໄດ້ທົ່ວນະຄອນຫຼວງວຽງຈັນ ແລະ ທຸກແຂວງ.',
@@ -380,7 +393,7 @@ const allCreatives: RichAdCreative[] = [
     visualSub: 'ຄົ່ວໃໝ່ທຸກເຊົ້າ • ສົ່ງດ່ວນ 20 ນາທີ',
     icon: 'mdi-coffee',
     gradient: 'linear-gradient(135deg, #451A03 0%, #92400E 55%, #D97706 100%)',
-    accentColor: '#B45309',
+    accentColor: '#92400E',
     btnColor: 'warning',
     headline: 'ຫອມເຂັ້ມກາເຟອາຣາບິກ້າແທ້ 100% — ສັ່ງມື້ນີ້ ຊື້ 1 ແກ້ວ ແຖມຟຣີ 1 ແກ້ວ!',
     description: 'ມີທັງອາເມຣິກາໂນ້ເຢັນ, ລາເຕ້ຄາຣາເມວ ແລະ ເຂົ້າໜົມອົບສົດໃໝ່ ພ້ອມສົ່ງເຖິງຫ້ອງການ.',
@@ -416,7 +429,7 @@ const allCreatives: RichAdCreative[] = [
     visualSub: 'ເຄລມໄວພາຍໃນ 15 ນາທີ ຜ່ານມືຖື',
     icon: 'mdi-shield-car',
     gradient: 'linear-gradient(135deg, #064E3B 0%, #059669 58%, #34D399 100%)',
-    accentColor: '#059669',
+    accentColor: '#047857',
     btnColor: 'success',
     headline: 'ລົດເສຍ ຫຼື ເກີດອຸບັດຕິເຫດກາງທາງ ມີທີມຊ່ວຍເຫຼືອ ແລະ ລົດລາກຟຣີ 24 ຊົ່ວໂມງ!',
     description: 'ເບ້ຍປະກັນເລີ່ມຕົ້ນພຽງມື້ລະ 5,000 ກີບ ຄຸ້ມຄອງຄົບທັງລົດນ້ຳມັນ ແລະ ລົດໄຟຟ້າ EV.',
@@ -452,7 +465,7 @@ const allCreatives: RichAdCreative[] = [
     visualSub: 'ເຢັນໄວ ງຽບສະໜິດ ຮັບປະກັນຄອມເພຣສເຊີ້ 10 ປີ',
     icon: 'mdi-air-conditioner',
     gradient: 'linear-gradient(135deg, #0C4A6E 0%, #0284C7 55%, #2DD4BF 100%)',
-    accentColor: '#0284C7',
+    accentColor: '#0369A1',
     btnColor: 'primary',
     headline: 'ອາກາດຮ້ອນແນວນີ້ ປ່ຽນມາໃຊ້ແອ Inverter ເບີ 5 — ຕິດຕັ້ງຟຣີພາຍໃນມື້ດຽວ!',
     description: 'ແຖມຟຣີທໍ່ທອງແດງ 4 ແມັດ ແລະ ບໍລິການລ້າງແອຟຣີ 2 ຄັ້ງທຳອິດ.',
@@ -470,7 +483,7 @@ const allCreatives: RichAdCreative[] = [
     visualSub: 'ໃຊ້ໄດ້ທຸກຮ້ານສ້ອມແປງ ແລະ ຮ້ານຄ້າທົ່ວປະເທດ',
     icon: 'mdi-qrcode-scan',
     gradient: 'linear-gradient(135deg, #7C2D12 0%, #EA580C 55%, #FBBF24 100%)',
-    accentColor: '#EA580C',
+    accentColor: '#C2410C',
     btnColor: 'warning',
     headline: 'ຈ່າຍຄ່າສ້ອມແປງລົດ, ຄ່າຢາ ຫຼື ຄ່າກາເຟຜ່ານ QR ຮັບເງິນຄືນ Cashback 10% ທຸກບິນ!',
     description: 'ດາວໂຫຼດຟຣີ ບໍ່ມີຄ່າທຳນຽມລາຍປີ ໂອນໄວປອດໄພຕະຫຼອດ 24 ຊົ່ວໂມງ.',
@@ -488,7 +501,7 @@ const allCreatives: RichAdCreative[] = [
     visualSub: 'ລວມອາຫານເຊົ້າ 2 ທ່ານ + ສະລອຍນ້ຳວິວພູ',
     icon: 'mdi-island',
     gradient: 'linear-gradient(135deg, #134E4A 0%, #0D9488 55%, #38BDF8 100%)',
-    accentColor: '#0D9488',
+    accentColor: '#0F766E',
     btnColor: 'success',
     headline: 'ຂັບລົດທ່ຽວວັງວຽງເສົາ-ອາທິດນີ້! ຫ້ອງພັກວິວແມ່ນ້ຳຊອງ ຫຼຸດພິເສດ 40%',
     description: 'ເດີນທາງຈາກວຽງຈັນພຽງ 1 ຊົ່ວໂມງເຄິ່ງ ຜ່ານທາງດ່ວນ ມີບ່ອນຈອດລົດກວ້າງຂວາງປອດໄພ.',
@@ -640,24 +653,32 @@ onBeforeUnmount(() => {
 .sw-gdn-corner-label {
   font-size: 9.5px;
   font-weight: 700;
-  color: #00aecd;
+  color: #0369a1;
   padding-right: 2px;
+}
+
+.sw-gdn-dark .sw-gdn-corner-label {
+  color: #38bdf8;
 }
 
 .sw-gdn-corner-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   border: none;
   background: transparent;
-  color: #00aecd;
-  font-size: 10px;
+  color: #0369a1;
+  font-size: 11px;
   line-height: 1;
   cursor: pointer;
   padding: 0;
-  border-radius: 3px;
+  border-radius: 4px;
+}
+
+.sw-gdn-dark .sw-gdn-corner-btn {
+  color: #38bdf8;
 }
 
 .sw-gdn-corner-btn:hover {
@@ -728,10 +749,14 @@ onBeforeUnmount(() => {
   align-items: center;
   font-size: 10.5px;
   font-weight: 800;
-  color: #d97706;
-  background: rgba(245, 158, 11, 0.14);
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.18);
   padding: 1px 6px;
   border-radius: 5px;
+}
+
+.sw-gdn-dark .sw-rating-chip {
+  color: #fbbf24;
 }
 
 .sw-offer-chip {
