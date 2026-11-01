@@ -38,3 +38,4 @@ export default defineEventHandler((event) => {
   setResponseHeader(event, 'Cache-Control', 'public, max-age=86400')
   return body
 })
+

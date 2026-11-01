@@ -72,3 +72,4 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'Cache-Control', 'public, max-age=1800, s-maxage=1800')
   return xml
 })
+
