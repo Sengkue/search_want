@@ -1,32 +1,61 @@
 # Search-Want — ຄົ້ນຫາຮ້ານສ້ອມແປງ ແລະ ບໍລິການໃກ້ຄຽງຈາກບັນຫາຂອງທ່ານ
 
-ລະບົບເວັບແອັບພລິເຄຊັນ ແລະ ແອັບມືຖື Android APK ແບບ Full-Stack (ຮອງຮັບທັງ **ມືຖື ແລະ ຄອມພິວເຕີ**) ພາສາລາວ 100%, ພັດທະນາດ້ວຍ **Nuxt 4 + Vuetify 4 + Pinia + Leaflet + Capacitor 8** ໃນຝັ່ງ Frontend ແລະ **Python 3.12 + FastAPI + SQLAlchemy + PostgreSQL** ໃນຝັ່ງ Backend.
+ລະບົບເວັບແອັບພລິເຄຊັນ (SSR + SEO ຄວາມໄວສູງ) ແລະ ແອັບມືຖື Android APK ແບບ Full-Stack (ຮອງຮັບທັງ **ມືຖື ແລະ ຄອມພິວເຕີ**) ພາສາລາວ 100%, ພັດທະນາດ້ວຍ **Nuxt 4 + Vuetify 4 (Tree-Shaken) + Pinia + Leaflet + Capacitor 8** ໃນຝັ່ງ Frontend ແລະ **Python 3.12 + FastAPI + SQLAlchemy + PostgreSQL** ໃນຝັ່ງ Backend.
 
 ---
 
 ## ຄຸນສົມບັດຫຼັກ
 
 1. **ຄົ້ນຫາຮ້ານຈາກອາການ ຫຼື ບັນຫາທີ່ກຳລັງພົບ (`/`):**
-   - ພິມອາການ ຫຼື ບັນຫາປະຈຳວັນດ້ວຍພາສາທຳມະດາ (ເຊັ່ນ: *"ລົດສະຕາດບໍ່ຕິດ ແລະ ມີສຽງດັງແກັກໆ"*, *"ເຄື່ອງຈັກມີຄວັນຂຶ້ນ"*, *"ຢາງລົດຮົ່ວ"*, *"ໜ້າຈໍໂທລະສັບແຕກ"*, *"ທໍ່ນ້ຳປະປາຮົ່ວ"*).
-   - ລະບົບວິເຄາະອາການອັດສະລິຍະ ຊ່ວຍແນະນຳປະເພດຊ່າງທີ່ກົງຈຸດ ພ້ອມຄຳແນະນຳດ້ານຄວາມປອດໄພເບື້ອງຕົ້ນ.
-   - ດຶງພິກັດ GPS ສົດຈາກອຸປະກອນ (ຫຼື ກົດ/ລາກໝຸດເທິງແຜນທີ່ດ້ວຍຕົນເອງ) ເພື່ອຄົ້ນຫາຮ້ານທີ່ **ຜ່ານການອະນຸມັດແລ້ວ** ໃກ້ໂຕທ່ານ ຈັດລຽງຕາມໄລຍະທາງຈິງ (`ກມ.`), ພ້ອມປຸ່ມ **ໂທຫາຮ້ານ** ແລະ **ນຳທາງຜ່ານ Google Maps** ໃນຄລິກດຽວ.
+   - **ຊ່ອງຄົ້ນຫາແບບ Pill Capsule & ປຸ່ມ `🔍 ຄົ້ນຫາ` Gradient ລະດັບ Native App:** ພິມອາການດ້ວຍພາສາທຳມະດາ (ເຊັ່ນ: *"ລົດສະຕາດບໍ່ຕິດ"*, *"ເຄື່ອງຍົນມີຄວັນ"*, *"ຢາງລົດແບນ"*, *"ໜ້າຈໍໂທລະສັບແຕກ"*, *"ທໍ່ນ້ຳຮົ່ວ"*, *"ແອບໍ່ເຢັນ"*).
+   - **ຈັດການແປ້ນພິມມືຖືອັດສະລິຍະ (Smart Mobile Keyboard UX):**
+     - ກົດປຸ່ມ `ຄົ້ນຫາ` ຫຼື ປຸ່ມລ້າງ `✕` ໂດຍແປ້ນພິມມືຖືບໍ່ເດັ້ງຂຶ້ນມາລົບກວນເອງ ແລະ ພັບເກັບແປ້ນພິມລົງທັນທີ (`blur()`) ເມື່ອກົດຄົ້ນຫາ ຫຼື ກົດປຸ່ມ `Search` ເທິງແປ້ນພິມໂທລະສັບ.
+     - ສະແດງກ່ອງແນະນຳອາການພາສາລາວແບບ Real-time + ປະຫວັດຄົ້ນຫາຫຼ້າສຸດ + ປຸ່ມ `⌨ ປິດ` ແປ້ນພິມ ພ້ອມຕົວອັກສອນ `16px` ປ້ອງກັນໜ້າຈໍມືຖືຊູມເອງ ແລະ ເລື່ອນເຊື່ອງແຖບເມນູລຸ່ມອັດຕະໂນມັດຂະນະກຳລັງພິມ.
+   - **ວິເຄາະອາການ & ຄຳນວນໄລຍະທາງ GPS ຈິງ:** ແນະນຳປະເພດຊ່າງທີ່ກົງຈຸດ ພ້ອມດຶງພິກັດ GPS ສົດ (ຫຼື ລາກໝຸດເທິງແຜນທີ່) ເພື່ອຈັດລຽງຮ້ານທີ່ **ຜ່ານການອະນຸມັດແລ້ວ** ຕາມໄລຍະທາງຈິງ (`ກມ.`), ພ້ອມປຸ່ມ **ໂທຫາຮ້ານ** ແລະ **ນຳທາງ Google Maps** ໃນ 1 ແຕະ.
 
-2. **ເຈົ້າຂອງຮ້ານເພີ່ມຮ້ານຂຶ້ນແຜນທີ່ໄດ້ເອງຟຣີ (`/shops/add` ແລະ `/shops/mine`):**
-   - ເຈົ້າຂອງຮ້ານ ຫຼື ຊ່າງສ້ອມແປງ ສາມາດລົງທະບຽນ/ເຂົ້າສູ່ລະບົບ, ລະບຸບັນຫາທີ່ຮັບແກ້ໄຂ ແລະ **ປັກໝຸດຕຳແໜ່ງຮ້ານທີ່ຊັດເຈນ** ເທິງແຜນທີ່ (ຫຼື ກົດປຸ່ມ *"ໃຊ້ພິກັດ GPS ປັດຈຸບັນ"*).
+2. **ໜ້າໂປຣໄຟລ໌ຮ້ານຄ້າສາທາລະນະສຳລັບ SEO (`/shops/[id]`):**
+   - ທຸກຮ້ານທີ່ຜ່ານການອະນຸມັດແລ້ວຈະມີໜ້າເວັບສະເພາະຂອງຕົນເອງ (ເຊັ່ນ `/shops/1`) ສະແດງລາຍລະອຽດບໍລິການຄົບຖ້ວນ, ເວລາເປີດ-ປິດ, ປ້າຍສຸກເສີນ 24 ຊມ., ເບີໂທຕິດຕໍ່, ພິກັດແຜນທີ່ ແລະ ປຸ່ມ Tag ອາການທີ່ຮັບແກ້ໄຂ ເພື່ອໃຫ້ລູກຄ້າຄົ້ນຫາພົບຜ່ານ Google Search ໂດຍກົງ.
+
+3. **ເຈົ້າຂອງຮ້ານເພີ່ມຮ້ານຂຶ້ນແຜນທີ່ໄດ້ເອງຟຣີ (`/shops/add` ແລະ `/shops/mine`):**
+   - ເຈົ້າຂອງຮ້ານ ຫຼື ຊ່າງສ້ອມແປງ ສາມາດລົງທະບຽນ/ເຂົ້າສູ່ລະບົບ, ລະບຸບັນຫາທີ່ຮັບແກ້ໄຂ ແລະ **ປັກໝຸດຕຳແໜ່ງຮ້ານທີ່ຊັດເຈນ** ເທິງແຜນທີ່ (ຫຼື ກົດປຸ່ມ *"ດຶງ GPS ຂອງຂ້ອຍ"*).
    - ຮ້ານທີ່ສົ່ງເຂົ້າມາຈະຢູ່ໃນສະຖານະ **`PENDING` (ລໍຖ້າອະນຸມັດ)** ແລະ ແຈ້ງເຕືອນຫາຜູ້ດູແລລະບົບທັນທີ. ເຈົ້າຂອງຮ້ານສາມາດຕິດຕາມສະຖານະ ແລະ ແກ້ໄຂຂໍ້ມູນເພື່ອສົ່ງກວດຄືນໃໝ່ໄດ້.
 
-3. **ໜ້າຜູ້ດູແລລະບົບກວດສອບ ແລະ ອະນຸມັດຮ້ານ (`/admin/approvals`):**
-   - ກວດສອບລາຍລະອຽດຮ້ານທີ່ສົ່ງເຂົ້າມາ, ກວດພິກັດໝຸດເທິງແຜນທີ່ ແລ້ວກົດ **ອະນຸມັດ (`Approve`)** ເພື່ອເຜີຍແຜ່ຮ້ານຂຶ້ນແຜນທີ່ທັນທີ (ພ້ອມສົ່ງແຈ້ງເຕືອນຫາເຈົ້າຂອງຮ້ານ) ຫຼື **ປະຕິເສດ (`Reject`)** ພ້ອມລະບຸຄຳແນະນຳໃນການແກ້ໄຂ.
+4. **ໜ້າຜູ້ດູແລລະບົບກວດສອບ, ອະນຸມັດຮ້ານ ແລະ ຈັດການສິດ (`/admin/approvals`):**
+   - ກວດສອບລາຍລະອຽດຮ້ານທີ່ສົ່ງເຂົ້າມາ, ກວດພິກັດໝຸດເທິງແຜນທີ່ ແລ້ວກົດ **ອະນຸມັດ (`Approve`)** ເພື່ອເຜີຍແຜ່ຮ້ານຂຶ້ນແຜນທີ່ ແລະ ເພີ່ມເຂົ້າ `/sitemap.xml` ທັນທີ ຫຼື **ປະຕິເສດ (`Reject`)** / **ຢຸດຊົ່ວຄາວ (`Suspend`)** ພ້ອມລະບຸເຫດຜົນແຈ້ງເຕືອນເຈົ້າຂອງຮ້ານ.
 
-4. **ດີໄຊນ໌ຮອງຮັບທັງມືຖື ແລະ ຄອມພິວເຕີ + ຟອນພາສາລາວຝັງໃນໂຕ 100%:**
-   - **ມືຖື (Mobile):** ແຖບເມນູລຸ່ມສຸດ (Footer Navigation) ກົດງ່າຍດ້ວຍມືດຽວ (ບໍ່ມີແຖບເມນູເທິງບັງໜ້າຈໍ), ສະຫຼັບມຸມມອງ ລາຍຊື່ຮ້ານ / ແຜນທີ່, ຮອງຮັບໂໝດແຈ້ງ ແລະ ໂໝດມືດ.
-   - **ຄອມພິວເຕີ (Desktop):** ແຖບເມນູດ້ານເທິງ, ໜ້າຈໍແບ່ງຊ້າຍ-ຂວາ (ລາຍຊື່ຮ້ານ + ແຜນທີ່ໂຕ້ຕອບແບບ Sticky) ແລະ ໜ້າຈັດການຮ້ານສຳລັບ Admin.
-   - **ຟອນພາສາລາວໃນໂຕ (Self-Hosted Lao Fonts):** ຝັງໄຟລ໌ຟອນ `Noto Sans Lao Looped` ແລະ `Noto Sans Lao` ໄວ້ໃນໂປຣເຈັກໂດຍກົງ (`frontend/public/fonts/` ແລະ `backend/app/static/fonts/`) ສະແດງຜົນພາສາລາວຄົມຊັດທຸກໜ້າຈໍ ລວມທັງໜ້າ `/docs` ໂດຍບໍ່ຕ້ອງເພິ່ງຟອນພາຍນອກ.
+5. **ດີໄຊນ໌ຮອງຮັບທັງມືຖື ແລະ ຄອມພິວເຕີ + ຟອນພາສາລາວຝັງໃນໂຕ 100%:**
+   - **ມືຖື (Mobile):** ແຖບເມນູລຸ່ມສຸດ (Footer Navigation) ກົດງ່າຍດ້ວຍມືດຽວ (ບໍ່ມີແຖບເມນູເທິງບັງໜ້າຈໍ ແລະ ເຊື່ອງອັດຕະໂນມັດເມື່ອແປ້ນພິມເປີດ), ສະຫຼັບມຸມມອງ ທັງສອງ / ແຜນທີ່ເຕັມຈໍ / ລາຍການ, ຮອງຮັບໂໝດແຈ້ງ ແລະ ໂໝດມືດ.
+   - **ຄອມພິວເຕີ (Desktop):** ແຖບເມນູດ້ານເທິງແບບ Frosted Glass, ໜ້າຈໍແບ່ງຊ້າຍ-ຂວາ (ລາຍຊື່ຮ້ານ + ແຜນທີ່ໂຕ້ຕອບແບບ Sticky).
+   - **ຟອນພາສາລາວໃນໂຕ (Self-Hosted Lao Fonts):** ຝັງໄຟລ໌ຟອນ `Noto Sans Lao Looped` ແລະ `Noto Sans Lao` ໄວ້ໃນໂປຣເຈັກໂດຍກົງ (`frontend/public/fonts/` ແລະ `backend/app/static/fonts/`) ຄົມຊັດທຸກໜ້າຈໍໂດຍບໍ່ຕ້ອງເພິ່ງ CDN ພາຍນອກ.
 
-5. **ລະບົບສ້າງລາຍຮັບ Google AdSense (`/admin/approvals?tab=ADSENSE`, `/ads.txt`, `/privacy`):**
-   - ຕິດຕັ້ງຊ່ອງໂຄສະນາ **In-Feed** (ແຊກລະຫວ່າງບັດລາຍຊື່ຮ້ານ) ແລະ **ປ້າຍໂຄສະນາທ້າຍໜ້າເວັບ (Responsive Banner)** ພ້ອມ `<meta name="google-adsense-account">` ແລະ ລະບົບ Auto Ads ຄົບຖ້ວນ.
-   - ຕັ້ງຄ່າລະຫັດ Publisher ID (`ca-pub-4990570878383229`), Slot IDs (`6642734194`, `8750022785`), Auto Ads ແລະ **ໂໝດທົດລອງ (Preview / Test Mode)** ໄດ້ສົດໆຈາກໜ້າຜູ້ດູແລລະບົບ (ແຖບ `ໂຄສະນາ AdSense`) ຫຼື ຜ່ານໄຟລ໌ `.env`.
-   - ສ້າງໄຟລ໌ `/ads.txt`, `/robots.txt` ແລະ ໜ້ານະໂຍບາຍຄວາມເປັນສ່ວນຕົວ (`/privacy`) ອັດຕະໂນມັດຕາມກົດລະບຽບຂອງ Google AdSense ແລະ ປິດໂຄສະນາເວັບອັດຕະໂນມັດເມື່ອເປີດໃຊ້ງານຜ່ານແອັບ Android APK (Capacitor), ໜ້າ `/login` ແລະ ໜ້າ `/admin/*`.
+6. **ລະບົບສ້າງລາຍຮັບ Google AdSense (`/admin/approvals?tab=ADSENSE`, `/ads.txt`, `/privacy`):**
+   - ຕິດຕັ້ງຊ່ອງໂຄສະນາ **In-Feed** ແລະ **Responsive Banner** ແບບ Lazy Client-Hydrated (ບໍ່ກະທົບຄວາມໄວ SSR ແລະ ບໍ່ປົນເປື້ອນເນື້ອຫາ SEO ທີ່ Googlebot ອ່ານ).
+   - ຈັດການລະຫັດ Publisher ID (`ca-pub-4990570878383229`), Slot IDs (`6642734194`, `8750022785`), Auto Ads ແລະ **ໂໝດທົດລອງ** ສະເພາະສິດ `SUPER_ADMIN` ພ້ອມສ້າງ `/ads.txt` ແລະ `/privacy` ອັດຕະໂນມັດ.
+
+---
+
+## ສະຖາປັດຕະຍະກຳ Frontend ເບົາ, ໄວ ແລະ ຕິດອັນດັບ Top Search SEO
+
+ໂປຣເຈັກໄດ້ຖືກປັບຈູນລະດັບ Production ເພື່ອໃຫ້ໂຫຼດເບົາທີ່ສຸດ, ສະແດງຜົນໄວທີ່ສຸດ ແລະ ຮອງຮັບການຈັດອັນດັບເທິງ Google Search ສູງສຸດ:
+
+### 1. ເບົາ (`Lightweight Bundle & Assets`)
+- **Vuetify 4 Tree-Shaking (`frontend/app/plugins/vuetify.ts`):** Import ສະເພາະ 35 Component ທີ່ໃຊ້ງານຈິງເທົ່ານັ້ນ (ຕັດ Component ສ່ວນເກີນ 60+ ໂຕອອກຈາກ JavaScript Bundle).
+- **Map & Dialog Code-Splitting:** ແຍກ CSS ແລະ JS ຂອງແຜນທີ່ Leaflet (`leaflet-vendor`) ໄວ້ໃນ `ShopMap.client.vue` ເພື່ອບໍ່ໃຫ້ໜ້າອື່ນຕ້ອງໂຫຼດໄຟລ໌ແຜນທີ່ ແລະ ໃຊ້ `<LazyAdSenseSlot>`, `<LazyMobileInstallDialog>`, `<LazyGpsSecureOriginDialog>` ເພື່ອຫຼຸດຂະໜາດໄຟລ໌ເລີ່ມຕົ້ນ.
+- **Brotli + Gzip & Immutable Cache (`frontend/nuxt.config.ts`):** ບີບອັດໄຟລ໌ Static ອັດຕະໂນມັດ ແລະ ຕັ້ງ `Cache-Control: public, max-age=31536000, immutable` ສຳລັບ `/_nuxt/**` ແລະ `/fonts/**`.
+
+### 2. ໄວ (`Blazing-Fast SSR & 60fps UI`)
+- **Full Server-Side Rendering (`ssr: true`):** ດຶງຂໍ້ມູນໝວດໝູ່, ອາການ ແລະ ຮ້ານໃກ້ຄຽງແບບຂະໜານ (`Promise.all` ຜ່ານ `useAsyncData`) ຕັ້ງແຕ່ເທິງ Server ເຮັດໃຫ້ເປີດໜ້າທຳອິດເຫັນລາຍຊື່ຮ້ານທັນທີ (`Instant LCP`) — ສ່ວນຕອນ Build ໄຟລ໌ Android APK ສະຄຣິບ `scripts/build-android.mjs` ຈະສະຫຼັບເປັນ `NUXT_SSR=false` ອັດຕະໂນມັດ.
+- **In-Memory Store Cache & Request Deduplication (`frontend/app/stores/shops.ts`):** ຈື່ຂໍ້ມູນໝວດໝູ່ ແລະ ອາການໄວ້ໃນ Memory 5 ນາທີ ເຮັດໃຫ້ການສະຫຼັບໜ້າໄປ-ມາໄວ `0ms` ພ້ອມລະບົບປ້ອງກັນ API Response ເກົ່າທັບຜົນຄົ້ນຫາໃໝ່.
+- **Zero-CLS & Smooth Scrolling (`frontend/app/assets/css/main.css`):** ໃຊ້ CSS Media Queries ຈັດການ Navbar/Footer ໂດຍບໍ່ມີອາການໜ້າຈໍກະພິບ (`CLS = 0`) ແລະ ໃຊ້ `content-visibility: auto` ກັບບັດຮ້ານຄ້າ ເພື່ອໃຫ້ເລື່ອນໜ້າຈໍມືຖືລື່ນ 60fps.
+
+### 3. ຕິດ Top Search Google SEO (`Technical & Local Business SEO`)
+- **Googlebot ອ່ານ HTML ພາສາລາວໄດ້ 100% ທັນທີ:** ທັງໜ້າຫຼັກ (`/`), ໜ້າໝວດໝູ່ (`/?category=...`), ໜ້າຄຳຄົ້ນຫາ (`/?q=...`) ແລະ ໜ້າລາຍລະອຽດຮ້ານ (`/shops/[id]`) ຖືກ Pre-render ເປັນ Semantic HTML (`<h1>`, `<h2>`, `<article>`, `<nav>`, `<details>`).
+- **Schema.org Rich Results (`JSON-LD`) ອັດຕະໂນມັດ (`frontend/app/composables/useSeo.ts`):**
+  - ໜ້າຫຼັກ (`/`): ຝັງ `WebSite` + `SearchAction` (Sitelinks Search Box), `ItemList` ແລະ `FAQPage`.
+  - ໜ້າຮ້ານຄ້າ (`/shops/[id]`): ຝັງ `LocalBusiness` (ພ້ອມພິກັດ `GeoCoordinates`, `telephone`, `openingHours`, `PostalAddress` ປະເທດລາວ `LA`) ແລະ `BreadcrumbList`.
+- **Dynamic `/sitemap.xml` ແລະ `/robots.txt` ອັດຕະໂນມັດ:**
+  - ເມື່ອ Admin ກົດອະນຸມັດຮ້ານໃໝ່ ລິ້ງ `/shops/{id}` ຈະຖືກເພີ່ມເຂົ້າ `/sitemap.xml` ທັນທີ (ຮ້ານທີ່ຍັງ `PENDING` ຫຼື `REJECTED` ຈະບໍ່ຖືກເປີດເຜີຍ).
+  - ກຳນົດ `noindex, nofollow` ໃຫ້ໜ້າ `/admin/**`, `/shops/mine` ແລະ `/login` ເພື່ອໃຫ້ Google ທຸ່ມຄະແນນການຈັດອັນດັບໄປທີ່ໜ້າຮ້ານຄ້າ ແລະ ໜ້າຄົ້ນຫາ 100%.
 
 ---
 
@@ -34,10 +63,10 @@
 
 | ໂຟນເດີ / ໄຟລ໌ | ລາຍລະອຽດ |
 | :--- | :--- |
-| `backend/` | ລະບົບຫຼັງບ້ານ Python 3.12 + FastAPI + SQLAlchemy + PostgreSQL |
-| `frontend/` | ລະບົບໜ້າບ້ານ Nuxt 4 + Vuetify 4 + Leaflet + Capacitor 8 Android |
+| `backend/` | ລະບົບຫຼັງບ້ານ Python 3.12 + FastAPI + SQLAlchemy + PostgreSQL + RBAC & Dynamic SEO API |
+| `frontend/` | ລະບົບໜ້າບ້ານ Nuxt 4 (SSR) + Vuetify 4 (Tree-Shaken) + Leaflet + Nitro Sitemap/Robots + Capacitor 8 |
 | `dist/` | ບ່ອນເກັບໄຟລ໌ແອັບ Android APK ທີ່ສ້າງສຳເລັດແລ້ວ (`SearchWant-debug.apk`) |
-| `.env.example` | ໄຟລ໌ຕົວຢ່າງການຕັ້ງຄ່າ Environment Variables ສຳລັບຖານຂໍ້ມູນ ແລະ Google AdSense |
+| `.env.example` | ໄຟລ໌ຕົວຢ່າງການຕັ້ງຄ່າ Environment Variables ສຳລັບ Production, ຖານຂໍ້ມູນ, SEO Domain ແລະ Google AdSense |
 | `start-backend.bat` | ໄຟລ໌ລັດສຳລັບດັບເບິນຄລິກເປີດເຊີບເວີ Python Backend (`Port 8000`) |
 | `start-frontend.bat` | ໄຟລ໌ລັດສຳລັບດັບເບິນຄລິກເປີດເຊີບເວີ Nuxt 4 Frontend (`Port 3000`) |
 | `allow-mobile-access.bat` | ໄຟລ໌ເປີດ Windows Firewall (`Port 3000, 8000`) ເພື່ອໃຫ້ມືຖືໃນວົງ Wi-Fi ດຽວກັນເຂົ້າເຖິງໄດ້ |
@@ -56,9 +85,9 @@ cd backend
 ```
 
 - ກວດສອບສະຖານະ API: http://localhost:8000/api/health
-- ເອກະສານ API ແບບໂຕ້ຕອບ (Swagger UI): http://localhost:8000/docs
+- ເອກະສານ API ແບບໂຕ້ຕອບ (Swagger UI — ເປີດສະເພາະໂໝດພັດທະນາ): http://localhost:8000/docs
 
-### 2. ເປີດເຊີບເວີ Nuxt 4 + Vuetify 4 Frontend (Port `3000`)
+### 2. ເປີດເຊີບເວີ Nuxt 4 SSR Frontend (Port `3000`)
 
 ດັບເບິນຄລິກໄຟລ໌ `start-frontend.bat` ຫຼື ເປີດ Terminal ອີກໜ້າຕ່າງໜຶ່ງແລ້ວລັນ:
 
@@ -68,12 +97,21 @@ npm.cmd run dev
 ```
 
 - **ເປີດເທິງຄອມພິວເຕີ:** http://localhost:3000
+- **ກວດສອບ Sitemap & Robots ສຳລັບ SEO:** http://localhost:3000/sitemap.xml ແລະ http://localhost:3000/robots.txt
 - **ເປີດເທິງມືຖືຜ່ານ Wi-Fi ພ້ອມໃຊ້ GPS ສົດ (HTTPS Port `3443`):**
   ```powershell
   cd frontend
   npm.cmd run dev:https
   ```
   ຈາກນັ້ນເປີດໃນມືຖືທີ່ຕໍ່ Wi-Fi ດຽວກັນທີ່ `https://<IP-ຄອມພິວເຕີຂອງທ່ານ>:3443` *(ຫາກມືຖືເຂົ້າບໍ່ໄດ້ ໃຫ້ຄລິກຂວາທີ່ `allow-mobile-access.bat` ແລ້ວເລືອກ **Run as administrator** 1 ຄັ້ງ).*
+
+### 3. ການ Build ແລະ ລັນ Frontend ໃນໂໝດ Production SSR (ຄວາມໄວສູງສຸດ)
+
+```powershell
+cd frontend
+npm.cmd run build
+node .output/server/index.mjs
+```
 
 ---
 
@@ -98,12 +136,13 @@ npm.cmd run dev
 | **`SHOP_OWNER` (ເຈົ້າຂອງຮ້ານ)** | ເພີ່ມຮ້ານໃໝ່, ແກ້ໄຂສະເພາະຮ້ານຂອງຕົນເອງ (ຕ້ອງຜ່ານການອະນຸມັດໃໝ່ທຸກຄັ້ງ) ແລະ ລຶບຮ້ານຮ່າງທີ່ຍັງບໍ່ອະນຸມັດ | **ບໍ່ສາມາດ** ແກ້ໄຂຮ້ານຄົນອື່ນ, **ບໍ່ສາມາດ** ແກ້ໄຂຮ້ານທີ່ຖືກຜູ້ດູແລລະງັບ (`SUSPENDED`) ແລະ ເຂົ້າໜ້າ `/admin/*` ບໍ່ໄດ້ |
 | **`USER` (ຜູ້ໃຊ້ທົ່ວໄປ)** | ຄົ້ນຫາຮ້ານທີ່ອະນຸມັດແລ້ວ, ປ່ຽນລະຫັດຜ່ານຕົນເອງ ແລະ ອັບເກຣດເປັນ `SHOP_OWNER` ອັດຕະໂນມັດເມື່ອສົ່ງຮ້ານທຳອິດ | ເຂົ້າເຖິງສະເພາະຂໍ້ມູນສາທາລະນະ (ບໍ່ເປີດເຜີຍອີເມວສ່ວນຕົວຂອງເຈົ້າຂອງຮ້ານ) |
 
-### ການຕັ້ງຄ່າກ່ອນນຳຂຶ້ນ Production (`.env`)
+### ການຕັ້ງຄ່າກ່ອນນຳຂຶ້ນ Production & Google Search Console (`.env`)
 ເມື່ອນຳລະບົບຂຶ້ນເຊີບເວີຈິງ ໃຫ້ກຳນົດຄ່າໃນ `.env` (ເບິ່ງຕົວຢ່າງໃນ `.env.example`):
 - `SEARCH_WANT_ENV=production` — ປິດປຸ່ມລ໊ອກອິນທົດລອງ 1 ຄລິກ, ບລັອກບັນຊີທົດລອງທີ່ໃຊ້ລະຫັດຜ່ານອ່ອນ (`admin123`/`owner123`/`user123`), ປິດ `/api/shops/seed-nearby` ແລະ ເຊື່ອງໜ້າ `/docs` ອັດຕະໂນມັດ.
 - `SEARCH_WANT_SECRET_KEY=<ລະຫັດສຸ່ມຍາວຢ່າງໜ້ອຍ 32 ຕົວອັກສອນ>` — ບັງຄັບກວດສອບກ່ອນເປີດເຊີບເວີ Production.
 - `SEARCH_WANT_SUPER_ADMIN_EMAIL` ແລະ `SEARCH_WANT_SUPER_ADMIN_PASSWORD` — ສ້າງບັນຊີຜູ້ບໍລິຫານສູງສຸດຕົວຈິງຂອງທ່ານອັດຕະໂນມັດໂດຍບໍ່ໃຊ້ບັນຊີທົດລອງ.
 - `SEARCH_WANT_CORS_ORIGINS=https://ໂດເມນຂອງທ່ານ.la` — ອະນຸຍາດການເອີ້ນ API ສະເພາະໂດເມນຈິງຂອງທ່ານເທົ່ານັ້ນ.
+- `NUXT_PUBLIC_SITE_URL=https://ໂດເມນຂອງທ່ານ.la` ແລະ `SEARCH_WANT_SITE_URL=https://ໂດເມນຂອງທ່ານ.la` — ໃຊ້ສ້າງລິ້ງ Canonical, OpenGraph, JSON-LD ແລະ `/sitemap.xml` ໃຫ້ກົງກັບໂດເມນຈິງ ແລ້ວນຳ `https://ໂດເມນຂອງທ່ານ.la/sitemap.xml` ໄປຢືນຢັນໃນ **Google Search Console → Sitemaps** ເພື່ອໃຫ້ Google ເກັບດັດຊະນີທຸກຮ້ານຂຶ້ນອັນດັບຄົ້ນຫາທັນທີ.
 
 ---
 
@@ -116,13 +155,13 @@ npm.cmd run dev
    google.com, pub-4990570878383229, DIRECT, f08c47fec0942fa0
    ```
 2. **ສົ່ງໂດເມນໃຫ້ Google AdSense ອະນຸມັດ:** ເຂົ້າໄປທີ່ເວັບໄຊ Google AdSense -> ເມນູ **Sites** -> ກົດ **Add site** ໃສ່ຊື່ໂດເມນຂອງທ່ານ ແລະ ລໍຖ້າຈົນສະຖານະປ່ຽນເປັນ **`Ready`**.
-3. **ປິດໂໝດທົດລອງເພື່ອຮັບໂຄສະນາຈິງ:** ເຂົ້າສູ່ລະບົບ Admin ທີ່ໜ້າ `/admin/approvals?tab=ADSENSE` -> ປິດປຸ່ມ **ໂໝດທົດລອງ (Preview / Test Mode)** -> ກົດ **ບັນທຶກການຕັ້ງຄ່າ** ເພື່ອໃຫ້ Google ສະແດງໂຄສະນາຈິງ 100%.
+3. **ປິດໂໝດທົດລອງເພື່ອຮັບໂຄສະນາຈິງ:** ເຂົ້າສູ່ລະບົບ Super Admin ທີ່ໜ້າ `/admin/approvals?tab=ADSENSE` -> ປິດປຸ່ມ **ໂໝດທົດລອງ (Preview / Test Mode)** -> ກົດ **ບັນທຶກການຕັ້ງຄ່າ** ເພື່ອໃຫ້ Google ສະແດງໂຄສະນາຈິງ 100%.
 
 ---
 
 ## ການສ້າງໄຟລ໌ແອັບ Android APK (Capacitor 8)
 
-ໂປຣເຈັກນີ້ໃຊ້ **Capacitor 8** ຫຸ້ມລະບົບເວັບ Nuxt 4 ເພື່ອສ້າງເປັນໄຟລ໌ແອັບມືຖື Android APK ຈາກໂຄ້ດຊຸດດຽວກັນ.
+ໂປຣເຈັກນີ້ໃຊ້ **Capacitor 8** ຫຸ້ມລະບົບເວັບ Nuxt 4 ເພື່ອສ້າງເປັນໄຟລ໌ແອັບມືຖື Android APK ຈາກໂຄ້ດຊຸດດຽວກັນ (ສະຄຣິບ Build ຈະສະຫຼັບເປັນໂໝດ Static SPA `NUXT_SSR=false` ໃຫ້ອັດຕະໂນມັດ ພ້ອມຕັ້ງ `android:windowSoftInputMode="adjustResize"` ສຳລັບແປ້ນພິມມືຖື).
 
 ### ສິ່ງທີ່ຕ້ອງຕິດຕັ້ງຄັ້ງທຳອິດ (ເທິງຄອມພິວເຕີທີ່ໃຊ້ສ້າງ APK)
 
@@ -172,7 +211,7 @@ npm run android:apk -- --api https://api.your-domain.com
 
 ## ການລັນຊຸດທົດສອບລະບົບ (Automated Tests)
 
-ສາມາດກວດສອບຄວາມຖືກຕ້ອງຂອງລະບົບ API ແລະ AdSense ທັງໝົດດ້ວຍ Pytest:
+ສາມາດກວດສອບຄວາມຖືກຕ້ອງຂອງລະບົບ API, RBAC, ຄວາມປອດໄພ Production, Sitemap/Robots SEO ແລະ Google AdSense ທັງໝົດດ້ວຍ Pytest (`11/11` tests):
 
 ```powershell
 cd backend
