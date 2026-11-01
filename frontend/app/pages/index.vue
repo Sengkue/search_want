@@ -757,6 +757,7 @@ const liveSuggestions = computed<SearchSuggestionItem[]>(() => {
 })
 
 const nearbyShops = computed(() => shopsStore.nearbyData?.shops ?? [])
+const visibleNearbyShops = computed(() => nearbyShops.value.slice(0, visibleShopsLimit.value))
 const diagnosis = computed(() => shopsStore.nearbyData?.diagnosis ?? null)
 
 function loadRecentSearches() {
