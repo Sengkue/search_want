@@ -318,8 +318,10 @@
       </div>
     </v-card>
 
-    <!-- Top Responsive Google AdSense Leaderboard Banner (Immediately visible above the fold) -->
-    <AdSenseSlot placement="banner" :variant-index="0" class="mb-3" />
+    <!-- Top Responsive Google AdSense Leaderboard Banner (Client-lazy so SSR HTML stays 100% pure SEO content) -->
+    <ClientOnly>
+      <LazyAdSenseSlot placement="banner" :variant-index="0" class="mb-3" />
+    </ClientOnly>
 
     <!-- Smart Problem Diagnosis Banner (Shown cleanly when user searches a symptom/problem) -->
     <div ref="resultsAnchorRef" />
@@ -410,17 +412,24 @@
               : { height: 'calc(100vh - 235px)', minHeight: '520px', position: 'sticky', top: '72px' }
           "
         >
-          <ShopMap
-            mode="discover"
-            :user-lat="shopsStore.userLat"
-            :user-lng="shopsStore.userLng"
-            :radius-km="shopsStore.radiusKm"
-            :shops="nearbyShops"
-            :selected-shop-id="shopsStore.selectedShopId"
-            height="100%"
-            @select-shop="handleSelectShop"
-            @update:user-location="handleManualUserPin"
-          />
+          <ClientOnly>
+            <ShopMap
+              mode="discover"
+              :user-lat="shopsStore.userLat"
+              :user-lng="shopsStore.userLng"
+              :radius-km="shopsStore.radiusKm"
+              :shops="nearbyShops"
+              :selected-shop-id="shopsStore.selectedShopId"
+              height="100%"
+              @select-shop="handleSelectShop"
+              @update:user-location="handleManualUserPin"
+            />
+            <template #fallback>
+              <div class="d-flex align-center justify-center h-100 text-body-small text-medium-emphasis">
+                ກຳລັງໂຫຼດແຜນທີ່ຮ້ານສ້ອມແປງໃກ້ຄຽງ...
+              </div>
+            </template>
+          </ClientOnly>
         </v-card>
       </v-col>
 
@@ -450,12 +459,13 @@
               @select="handleSelectShop"
               @focus-map="handleFocusOnMap"
             />
-            <AdSenseSlot
-              v-if="idx === 0 || (idx > 0 && idx % 5 === 0)"
-              placement="infeed"
-              :variant-index="Math.floor(idx / 5)"
-              class="mb-2"
-            />
+            <ClientOnly v-if="idx === 0 || (idx > 0 && idx % 5 === 0)">
+              <LazyAdSenseSlot
+                placement="infeed"
+                :variant-index="Math.floor(idx / 5)"
+                class="mb-2"
+              />
+            </ClientOnly>
           </template>
         </template>
 
@@ -495,7 +505,43 @@
     </v-row>
 
     <!-- Bottom Responsive Google AdSense Banner -->
-    <AdSenseSlot placement="banner" :variant-index="2" class="mt-3" />
+    <ClientOnly>
+      <LazyAdSenseSlot placement="banner" :variant-index="2" class="mt-3" />
+    </ClientOnly>
+
+    <!-- Semantic Lao Local SEO Directory & Zero-JS FAQ Guide (Boosts Top Google Search Rankings) -->
+    <v-card tag="section" aria-label="ຄູ່ມືຄົ້ນຫາຊ່າງສ້ອມແປງ ແລະ ຄຳຖາມທີ່ພົບເລື້ອຍ" class="pa-4 pa-md-5 mt-3">
+      <h2 class="text-title-medium font-weight-black mb-1">
+        ຄົ້ນຫາຮ້ານສ້ອມແປງ, ອູ່ລົດ ແລະ ຊ່າງສຸກເສີນໃກ້ຕົວທ່ານ — Search-Want
+      </h2>
+      <p class="text-body-small text-medium-emphasis mb-3">
+        ລະບົບຈັບຄູ່ອາການເປ່ເພຫາຊ່າງ ແລະ ຮ້ານສ້ອມແປງທີ່ຜ່ານການກວດສອບແລ້ວເທິງແຜນທີ່ GPS ທົ່ວນະຄອນຫຼວງວຽງຈັນ ແລະ ສປປ ລາວ:
+      </p>
+
+      <!-- Crawlable Internal Category Links for Search Engine Topic Clustering -->
+      <div v-if="shopsStore.categories.length" class="d-flex flex-wrap ga-1 mb-3">
+        <v-chip
+          v-for="cat in shopsStore.categories"
+          :key="`seo-cat-${cat.id}`"
+          size="x-small"
+          variant="tonal"
+          color="primary"
+          :to="`/?category=${cat.id}`"
+          :prepend-icon="cat.icon"
+        >
+          {{ cat.name }} ({{ cat.shop_count }})
+        </v-chip>
+      </div>
+
+      <div>
+        <details v-for="(faq, fIdx) in seoFaqs" :key="fIdx" class="sw-faq-item">
+          <summary class="text-body-medium">{{ faq.question }}</summary>
+          <p class="text-body-small text-medium-emphasis mt-2 mb-0" style="line-height: 1.6">
+            {{ faq.answer }}
+          </p>
+        </details>
+      </div>
+    </v-card>
   </v-container>
 </template>
 
