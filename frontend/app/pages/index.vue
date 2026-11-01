@@ -117,7 +117,7 @@
           <div class="sw-search-dropdown-header">
             <span class="text-body-small font-weight-bold text-medium-emphasis d-flex align-center ga-1">
               <v-icon
-                :icon="trimmedProblemQuery ? 'mdi-Creation' : 'mdi-lightning-bolt-outline'"
+                :icon="trimmedProblemQuery ? 'mdi-text-search-variant' : 'mdi-lightning-bolt-outline'"
                 size="15"
                 color="primary"
               />
@@ -322,6 +322,7 @@
     <AdSenseSlot placement="banner" :variant-index="0" class="mb-3" />
 
     <!-- Smart Problem Diagnosis Banner (Shown cleanly when user searches a symptom/problem) -->
+    <div ref="resultsAnchorRef" />
     <v-alert
       v-if="diagnosis && (shopsStore.problemQuery.trim() || diagnosis.matched_categories.length > 0)"
       :type="nearbyShops.length > 0 ? 'info' : 'warning'"
@@ -512,6 +513,16 @@ const { smAndDown } = useDisplay()
 
 const mobileViewMode = ref<'split' | 'map' | 'list'>('split')
 
+const RECENT_SEARCH_STORAGE_KEY = 'sw_recent_problem_searches_v1'
+const searchInputRef = ref<HTMLInputElement | null>(null)
+const searchWrapperRef = ref<HTMLElement | null>(null)
+const resultsAnchorRef = ref<HTMLElement | null>(null)
+const isSearchFocused = ref(false)
+const recentSearches = ref<string[]>([])
+let blurTimer: ReturnType<typeof setTimeout> | null = null
+
+const trimmedProblemQuery = computed(() => shopsStore.problemQuery.trim())
+
 const radiusOptions = [
   { label: 'ພາຍໃນ 5 ກມ.', value: 5 },
   { label: 'ພາຍໃນ 15 ກມ.', value: 15 },
@@ -525,45 +536,302 @@ const currentRadiusLabel = computed(() => {
 })
 
 const quickProblems = [
-  { label: 'ລົດສະຕາດບໍ່ຕິດ', query: 'ລົດຂອງຂ້ອຍສະຕາດບໍ່ຕິດ ແລະ ບໍ່ຮູ້ຈະແກ້ແນວໃດ', icon: 'mdi-car-off' },
-  { label: 'ຢາງລົດແບນ', query: 'ຢາງລົດແບນ ຖືກແທງເທິງທາງ', icon: 'mdi-car-tire-alert' },
-  { label: 'ຕ້ອງການລົດລາກ', query: 'ລົດເສຍກາງທາງ ຕ້ອງການລົດລາກດ່ວນ', icon: 'mdi-tow-truck' },
-  { label: 'ເຄື່ອງມີຄວັນ', query: 'ເຄື່ອງຍົນມີຄວັນ ແລະ ຮ້ອນເກີນ', icon: 'mdi-alert-octagon-outline' },
-  { label: 'ໜ້າຈໍແຕກ', query: 'ໜ້າຈໍໂທລະສັບແຕກ', icon: 'mdi-cellphone-off' },
-  { label: 'ທໍ່ນ້ຳຮົ່ວ', query: 'ທໍ່ນ້ຳໃນຫ້ອງນ້ຳຮົ່ວ ນ້ຳຮົ່ວ', icon: 'mdi-pipe-leak' },
-  { label: 'ແອບໍ່ເຢັນ', query: 'ແອເຢັນບໍ່ເຢັນ ລົມອຸ່ນ', icon: 'mdi-air-conditioner' },
+  {
+    label: 'ລົດສະຕາດບໍ່ຕິດ',
+    query: 'ລົດຂອງຂ້ອຍສະຕາດບໍ່ຕິດ ແລະ ບໍ່ຮູ້ຈະແກ້ແນວໃດ',
+    subtitle: 'ໝໍ້ໄຟໝົດ, ໄດສະຕາດ ຫຼື ລະບົບໄຟລົດ',
+    icon: 'mdi-car-off',
+    color: '#1a73e8',
+  },
+  {
+    label: 'ຢາງລົດແບນ',
+    query: 'ຢາງລົດແບນ ຖືກແທງເທິງທາງ',
+    subtitle: 'ປ່ຽນຢາງ, ຈອດຢາງ ຫຼື ຊ່າງນອກສະຖານທີ່',
+    icon: 'mdi-car-tire-alert',
+    color: '#ea580c',
+  },
+  {
+    label: 'ຕ້ອງການລົດລາກ',
+    query: 'ລົດເສຍກາງທາງ ຕ້ອງການລົດລາກດ່ວນ',
+    subtitle: 'ບໍລິການລົດລາກ ແລະ ກູ້ໄພສຸກເສີນ 24 ຊມ.',
+    icon: 'mdi-tow-truck',
+    color: '#dc2626',
+  },
+  {
+    label: 'ເຄື່ອງມີຄວັນ',
+    query: 'ເຄື່ອງຍົນມີຄວັນ ແລະ ຮ້ອນເກີນ',
+    subtitle: 'ໝໍ້ນ້ຳແຫ້ງ ຫຼື ເຄື່ອງຍົນຮ້ອນຈັດ',
+    icon: 'mdi-alert-octagon-outline',
+    color: '#d97706',
+  },
+  {
+    label: 'ໜ້າຈໍແຕກ',
+    query: 'ໜ້າຈໍໂທລະສັບແຕກ',
+    subtitle: 'ສ້ອມແປງໂທລະສັບມືຖື ແລະ ປ່ຽນໜ້າຈໍດ່ວນ',
+    icon: 'mdi-cellphone-off',
+    color: '#7c3aed',
+  },
+  {
+    label: 'ທໍ່ນ້ຳຮົ່ວ',
+    query: 'ທໍ່ນ້ຳໃນຫ້ອງນ້ຳຮົ່ວ ນ້ຳຮົ່ວ',
+    subtitle: 'ຊ່າງປະປາ, ທໍ່ແຕກ, ປັ໊ມນ້ຳບໍ່ດູດ',
+    icon: 'mdi-pipe-leak',
+    color: '#0284c7',
+  },
+  {
+    label: 'ແອບໍ່ເຢັນ',
+    query: 'ແອເຢັນບໍ່ເຢັນ ລົມອຸ່ນ',
+    subtitle: 'ລ້າງແອ, ເຕີມນ້ຳຢາແອບ້ານ ແລະ ຫ້ອງການ',
+    icon: 'mdi-air-conditioner',
+    color: '#0d9488',
+  },
 ]
+
+interface SearchSuggestionItem {
+  key: string
+  title: string
+  subtitle: string
+  query: string
+  icon: string
+  color: string
+}
+
+const categoryMap = computed(() => {
+  const map = new Map<number, { name: string; icon: string; color: string }>()
+  for (const c of shopsStore.categories) {
+    map.set(c.id, { name: c.name, icon: c.icon, color: c.color })
+  }
+  return map
+})
+
+const liveSuggestions = computed<SearchSuggestionItem[]>(() => {
+  const q = trimmedProblemQuery.value.toLowerCase()
+  if (!q) {
+    return quickProblems.slice(0, 6).map((p) => ({
+      key: `preset-${p.label}`,
+      title: p.label,
+      subtitle: p.subtitle,
+      query: p.query,
+      icon: p.icon,
+      color: p.color,
+    }))
+  }
+
+  const seen = new Set<string>()
+  const matches: SearchSuggestionItem[] = []
+
+  // 1. Match curated quick problems first
+  for (const p of quickProblems) {
+    if (
+      p.label.toLowerCase().includes(q) ||
+      p.query.toLowerCase().includes(q) ||
+      p.subtitle.toLowerCase().includes(q)
+    ) {
+      const norm = p.label.toLowerCase()
+      if (!seen.has(norm)) {
+        seen.add(norm)
+        matches.push({
+          key: `preset-${p.label}`,
+          title: p.label,
+          subtitle: p.subtitle,
+          query: p.query,
+          icon: p.icon,
+          color: p.color,
+        })
+      }
+    }
+  }
+
+  // 2. Match backend symptom keywords enriched with category icon/color
+  for (const s of shopsStore.symptoms) {
+    const cat = categoryMap.value.get(s.category_id)
+    const hay = `${s.symptom_label} ${s.keyword} ${s.advice_hint} ${cat?.name || ''}`.toLowerCase()
+    if (hay.includes(q)) {
+      const title = s.symptom_label || s.keyword
+      const norm = title.toLowerCase()
+      if (!seen.has(norm)) {
+        seen.add(norm)
+        matches.push({
+          key: `symp-${s.id}`,
+          title,
+          subtitle: cat ? `${cat.name} • ${s.advice_hint}` : s.advice_hint,
+          query: s.symptom_label || s.keyword,
+          icon: cat?.icon || 'mdi-wrench-outline',
+          color: cat?.color || '#1a73e8',
+        })
+      }
+    }
+    if (matches.length >= 6) break
+  }
+
+  // 3. Match service categories if room remains
+  if (matches.length < 6) {
+    for (const c of shopsStore.categories) {
+      if (c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)) {
+        const norm = c.name.toLowerCase()
+        if (!seen.has(norm)) {
+          seen.add(norm)
+          matches.push({
+            key: `cat-${c.id}`,
+            title: c.name,
+            subtitle: `${c.description} (${c.shop_count} ຮ້ານ)`,
+            query: c.name,
+            icon: c.icon,
+            color: c.color,
+          })
+        }
+      }
+      if (matches.length >= 6) break
+    }
+  }
+
+  return matches.slice(0, 6)
+})
 
 const nearbyShops = computed(() => shopsStore.nearbyData?.shops ?? [])
 const diagnosis = computed(() => shopsStore.nearbyData?.diagnosis ?? null)
 
-async function runProblemSearch() {
+function loadRecentSearches() {
+  if (!import.meta.client) return
+  try {
+    const raw = window.localStorage.getItem(RECENT_SEARCH_STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) {
+        recentSearches.value = parsed
+          .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+          .slice(0, 5)
+      }
+    }
+  } catch {
+    recentSearches.value = []
+  }
+}
+
+function saveRecentSearch(rawQuery: string) {
+  if (!import.meta.client) return
+  const clean = rawQuery.trim()
+  if (!clean) return
+  const updated = [clean, ...recentSearches.value.filter((item) => item !== clean)].slice(0, 5)
+  recentSearches.value = updated
+  try {
+    window.localStorage.setItem(RECENT_SEARCH_STORAGE_KEY, JSON.stringify(updated))
+  } catch {
+    // ignore storage quota errors
+  }
+}
+
+function clearRecentSearches() {
+  recentSearches.value = []
+  if (import.meta.client) {
+    try {
+      window.localStorage.removeItem(RECENT_SEARCH_STORAGE_KEY)
+    } catch {
+      // ignore
+    }
+  }
+}
+
+function focusSearchInput() {
+  searchInputRef.value?.focus()
+}
+
+function handleSearchFocus() {
+  if (blurTimer) {
+    clearTimeout(blurTimer)
+    blurTimer = null
+  }
+  isSearchFocused.value = true
+
+  // Keep search capsule comfortably near top on phone screens when virtual keyboard slides up
+  if (import.meta.client && smAndDown.value && searchWrapperRef.value) {
+    const rect = searchWrapperRef.value.getBoundingClientRect()
+    if (rect.top < 0 || rect.top > 125) {
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + rect.top - 12),
+        behavior: 'smooth',
+      })
+    }
+  }
+}
+
+function handleInputBlur() {
+  if (blurTimer) clearTimeout(blurTimer)
+  blurTimer = setTimeout(() => {
+    if (import.meta.client && document.activeElement !== searchInputRef.value) {
+      isSearchFocused.value = false
+    }
+  }, 130)
+}
+
+function dismissMobileKeyboard() {
+  if (blurTimer) {
+    clearTimeout(blurTimer)
+    blurTimer = null
+  }
+  isSearchFocused.value = false
+  searchInputRef.value?.blur()
+  if (import.meta.client && document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur()
+  }
+}
+
+function handleDocumentPointerDown(event: Event) {
+  if (!isSearchFocused.value || !searchWrapperRef.value) return
+  const target = event.target as Node | null
+  if (target && !searchWrapperRef.value.contains(target)) {
+    isSearchFocused.value = false
+  }
+}
+
+async function submitSearchFromUi() {
+  // Always dismiss mobile virtual keyboard immediately and NEVER trigger focus on button tap
+  dismissMobileKeyboard()
+  if (trimmedProblemQuery.value) {
+    saveRecentSearch(trimmedProblemQuery.value)
+  }
+  await shopsStore.searchNearby(true)
+}
+
+async function selectSuggestion(queryText: string) {
+  shopsStore.problemQuery = queryText
+  shopsStore.selectedCategoryId = null
+  dismissMobileKeyboard()
+  saveRecentSearch(queryText)
   await shopsStore.searchNearby(true)
 }
 
 async function clearProblemAndSearch() {
   shopsStore.problemQuery = ''
+  if (!isSearchFocused.value) {
+    dismissMobileKeyboard()
+  }
   await shopsStore.searchNearby(false)
 }
 
 async function selectRadius(val: number | null) {
+  dismissMobileKeyboard()
   shopsStore.radiusKm = val
   await shopsStore.searchNearby(false)
 }
 
 async function toggleEmergencyOnly() {
+  dismissMobileKeyboard()
   shopsStore.emergencyOnly = !shopsStore.emergencyOnly
   await shopsStore.searchNearby(false)
 }
 
 async function selectCategory(catId: number | null) {
+  dismissMobileKeyboard()
   shopsStore.selectedCategoryId = shopsStore.selectedCategoryId === catId ? null : catId
   await shopsStore.searchNearby(false)
 }
 
 async function applyQuickProblem(q: string) {
+  dismissMobileKeyboard()
   shopsStore.problemQuery = q
   shopsStore.selectedCategoryId = null
+  saveRecentSearch(q)
   await shopsStore.searchNearby(true)
 }
 
@@ -606,11 +874,18 @@ watch(requestMapPinPickCount, () => {
 })
 
 onMounted(async () => {
+  loadRecentSearches()
+  document.addEventListener('pointerdown', handleDocumentPointerDown, { passive: true })
   await shopsStore.loadCategoriesAndSymptoms()
   await shopsStore.searchNearby(false)
   if (route.query.autoGps === '1') {
     router.replace({ query: { ...route.query, autoGps: undefined } })
     await handleLocateMe()
   }
+})
+
+onBeforeUnmount(() => {
+  if (blurTimer) clearTimeout(blurTimer)
+  document.removeEventListener('pointerdown', handleDocumentPointerDown)
 })
 </script>
