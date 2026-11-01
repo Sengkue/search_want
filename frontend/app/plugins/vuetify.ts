@@ -1,4 +1,6 @@
+import { defineComponent, h } from 'vue'
 import { createVuetify } from 'vuetify'
+import { aliases, mdi as mdiSvg } from 'vuetify/iconsets/mdi-svg'
 import {
   VAlert,
   VApp,
@@ -37,6 +39,44 @@ import {
   VTextarea,
 } from 'vuetify/components'
 import { Ripple } from 'vuetify/directives'
+import { resolveMdiSvgPath } from '~/utils/mdiIcons'
+
+const SwMdiSvgIcon = defineComponent({
+  name: 'SwMdiSvgIcon',
+  inheritAttrs: false,
+  props: {
+    icon: {
+      type: [String, Array, Object, Function],
+      default: '',
+    },
+    tag: {
+      type: String,
+      default: 'i',
+    },
+  },
+  setup(props, { attrs }) {
+    return () => {
+      const pathData = resolveMdiSvgPath(typeof props.icon === 'string' ? props.icon : '')
+      return h(
+        props.tag,
+        { ...attrs, style: null },
+        [
+          h(
+            'svg',
+            {
+              class: 'v-icon__svg',
+              xmlns: 'http://www.w3.org/2000/svg',
+              viewBox: '0 0 24 24',
+              role: 'img',
+              'aria-hidden': 'true',
+            },
+            [h('path', { d: pathData })],
+          ),
+        ],
+      )
+    }
+  },
+})
 
 export default defineNuxtPlugin((nuxtApp) => {
   const vuetify = createVuetify({
@@ -81,6 +121,16 @@ export default defineNuxtPlugin((nuxtApp) => {
     directives: {
       Ripple,
     },
+    icons: {
+      defaultSet: 'mdi',
+      aliases,
+      sets: {
+        mdi: {
+          component: SwMdiSvgIcon as any,
+        },
+        svg: mdiSvg,
+      },
+    },
     theme: {
       defaultTheme: 'searchWantLight',
       themes: {
@@ -89,13 +139,13 @@ export default defineNuxtPlugin((nuxtApp) => {
           colors: {
             background: '#F5F7FB',
             surface: '#FFFFFF',
-            primary: '#1A73E8',
-            secondary: '#0D9488',
-            accent: '#F59E0B',
-            error: '#DC2626',
-            info: '#0284C7',
-            success: '#16A34A',
-            warning: '#EA580C',
+            primary: '#155EEF',
+            secondary: '#0F766E',
+            accent: '#B45309',
+            error: '#B91C1C',
+            info: '#0369A1',
+            success: '#15803D',
+            warning: '#C2410C',
           },
         },
         searchWantDark: {

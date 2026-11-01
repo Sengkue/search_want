@@ -8,13 +8,17 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt'],
 
-  // Leaflet CSS moved into ShopMap.client.vue so non-map routes have zero map CSS overhead
+  // Leaflet CSS moved into ShopMap.client.vue and @mdi/font replaced with tree-shaken @mdi/js SVGs (saves 714 KB!)
   css: [
     '~/assets/css/lao-font.css',
     'vuetify/styles',
-    '@mdi/font/css/materialdesignicons.css',
     '~/assets/css/main.css',
   ],
+
+  features: {
+    // Avoid duplicating 200+ KB of Vuetify styles inline inside SSR HTML when entry.css is already cached
+    inlineStyles: false,
+  },
 
   build: {
     transpile: ['vuetify'],
@@ -80,6 +84,16 @@ export default defineNuxtConfig({
       '/fonts/**': {
         headers: {
           'Cache-Control': 'public, max-age=31536000, immutable',
+        },
+      },
+      '/app-icon-96.webp': {
+        headers: {
+          'Cache-Control': 'public, max-age=31536000, immutable',
+        },
+      },
+      '/app-icon.png': {
+        headers: {
+          'Cache-Control': 'public, max-age=604800',
         },
       },
       '/admin/**': {

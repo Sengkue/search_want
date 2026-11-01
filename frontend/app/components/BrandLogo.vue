@@ -8,10 +8,11 @@
     }"
   >
     <img
-      src="/app-icon.png"
+      src="/app-icon-96.webp"
       alt="Search-Want"
       :width="size"
       :height="size"
+      decoding="async"
       style="display: block; width: 100%; height: 100%; object-fit: cover"
     />
   </span>
@@ -27,4 +28,3 @@ withDefaults(
   },
 )
 </script>
-
