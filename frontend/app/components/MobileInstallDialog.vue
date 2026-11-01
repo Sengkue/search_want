@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="internalOpen" max-width="360">
+  <v-dialog v-model="internalOpen" max-width="360" aria-label="ຕິດຕັ້ງແອັບ Search-Want">
     <v-card rounded="xl" class="sw-hero-card pa-4">
       <div class="d-flex align-center justify-space-between mb-2">
         <div class="d-flex align-center ga-3">
@@ -13,7 +13,14 @@
             </div>
           </div>
         </div>
-        <v-btn icon="mdi-close" variant="text" size="x-small" @click="dismissForSession" />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="x-small"
+          aria-label="ປິດໜ້າຕ່າງ"
+          title="ປິດໜ້າຕ່າງ"
+          @click="dismissForSession"
+        />
       </div>
 
       <p class="text-body-small text-medium-emphasis mb-3">
@@ -34,7 +41,7 @@
         @click="onDownloadApkClick"
       >
         ດາວໂຫຼດ ແລະ ຕິດຕັ້ງ APK
-        <span v-if="apkInfo.available && apkInfo.size_mb > 0" class="ml-1 opacity-90">
+        <span v-if="apkInfo.available && apkInfo.size_mb > 0" class="ml-1">
           ({{ apkInfo.size_mb }} MB)
         </span>
       </v-btn>
@@ -190,7 +197,13 @@ function dismissForSession() {
   internalOpen.value = false
 }
 
-onMounted(async () => {
+watch(internalOpen, (open) => {
+  if (open && !apkChecked.value) {
+    void loadApkInfo()
+  }
+})
+
+onMounted(() => {
   if (!import.meta.client) return
   if (isNativeApp() || isStandaloneMode()) return
 
@@ -198,27 +211,18 @@ onMounted(async () => {
   isIos.value = /iPhone|iPad|iPod/i.test(ua) && !/Android/i.test(ua)
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+    window.addEventListener(
+      'load',
+      () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {})
+      },
+      { once: true },
+    )
   }
 
   window.addEventListener('beforeinstallprompt', (e: Event) => {
     e.preventDefault()
     deferredPrompt.value = e
   })
-
-  await loadApkInfo()
-
-  const alreadyDismissed = sessionStorage.getItem(SESSION_DISMISS_KEY) === '1'
-  if (!alreadyDismissed && isMobilePhone()) {
-    setTimeout(() => {
-      if (
-        !isNativeApp() &&
-        !isStandaloneMode() &&
-        sessionStorage.getItem(SESSION_DISMISS_KEY) !== '1'
-      ) {
-        internalOpen.value = true
-      }
-    }, 650)
-  }
 })
 </script>

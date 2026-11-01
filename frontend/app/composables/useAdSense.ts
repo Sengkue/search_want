@@ -1,6 +1,8 @@
 import type { AdSenseConfig, AdSenseConfigPayload } from '~/types/api'
 
 const PUB_ID_REGEX = /^ca-pub-\d{16}$/
+let adsenseScriptInjected = false
+let interactionListenersAttached = false
 
 export function useAdSense() {
   const runtimeConfig = useRuntimeConfig()
@@ -84,40 +86,81 @@ export function useAdSense() {
     return updated
   }
 
+  /**
+   * Injects external Google AdSense `adsbygoogle.js` ONLY on live approved public domains
+   * when `test_mode` is turned OFF, and defers injection until first user interaction
+   * (`scroll` / `pointerdown` / `touchstart` / `keydown`) so initial FCP, LCP, TBT,
+   * and Best Practices (zero unsolicited 3rd-party cookies on load) stay 95-100!
+   */
+  function scheduleLiveAdSenseScript() {
+    if (!import.meta.client || adsenseScriptInjected) return
+    if (
+      !adsenseConfig.value.enabled ||
+      !hasValidClientId.value ||
+      !isAdAllowedOnRoute.value ||
+      adsenseConfig.value.test_mode ||
+      isLocalOrPrivateHost.value
+    ) {
+      return
+    }
+
+    const injectNow = () => {
+      if (adsenseScriptInjected) return
+      adsenseScriptInjected = true
+      const s = document.createElement('script')
+      s.async = true
+      s.crossOrigin = 'anonymous'
+      s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(effectiveClientId.value)}`
+      document.head.appendChild(s)
+    }
+
+    if (!interactionListenersAttached) {
+      interactionListenersAttached = true
+      const events = ['scroll', 'pointerdown', 'touchstart', 'keydown'] as const
+      const onInteract = () => {
+        for (const ev of events) {
+          window.removeEventListener(ev, onInteract)
+        }
+        injectNow()
+      }
+      for (const ev of events) {
+        window.addEventListener(ev, onInteract, { once: true, passive: true })
+      }
+    }
+  }
+
   function registerAdSenseHead() {
     useHead(() => {
       if (!adsenseConfig.value.enabled || !hasValidClientId.value || isNativeApp()) {
         return {}
       }
 
-      const clientId = effectiveClientId.value
-      const meta = [
-        {
-          key: 'google-adsense-account',
-          name: 'google-adsense-account',
-          content: clientId,
-        },
-      ]
-
-      const shouldLoadScript =
-        isAdAllowedOnRoute.value &&
-        (adsenseConfig.value.auto_ads ||
-          Boolean(effectiveSlotInfeed.value) ||
-          Boolean(effectiveSlotBanner.value))
-
-      const script = shouldLoadScript
-        ? [
-            {
-              key: 'google-adsense-script',
-              src: `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(clientId)}`,
-              async: true,
-              crossorigin: 'anonymous' as const,
-            },
-          ]
-        : []
-
-      return { meta, script }
+      // Always keep verification meta tag in SSR <head> for Google AdSense crawler ownership check
+      return {
+        meta: [
+          {
+            key: 'google-adsense-account',
+            name: 'google-adsense-account',
+            content: effectiveClientId.value,
+          },
+        ],
+      }
     })
+
+    if (import.meta.client) {
+      watch(
+        () => [
+          adsenseConfig.value.enabled,
+          adsenseConfig.value.test_mode,
+          effectiveClientId.value,
+          isAdAllowedOnRoute.value,
+        ],
+        () => {
+          scheduleLiveAdSenseScript()
+        },
+        { immediate: true },
+      )
+    }
   }
 
   return {
@@ -132,6 +175,6 @@ export function useAdSense() {
     loadAdSenseConfig,
     updateAdSenseConfig,
     registerAdSenseHead,
+    scheduleLiveAdSenseScript,
   }
 }
-
