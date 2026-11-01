@@ -900,6 +900,23 @@ textarea::placeholder,
     linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
 }
 
+.sw-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #0f766e;
+  background-color: rgba(15, 118, 110, 0.11);
+}
+
+.v-theme--searchWantDark .sw-tag-pill {
+  color: #2dd4bf;
+  background-color: rgba(20, 184, 166, 0.16);
+}
+
 /* Skip layout/paint cost for off-screen shop cards -> silky 60fps scrolling */
 .sw-shop-card {
   content-visibility: auto;
@@ -922,6 +939,23 @@ textarea::placeholder,
 
 .v-theme--searchWantDark .sw-shop-title-link:hover {
   color: #60a5fa;
+}
+
+.sw-seo-cat-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #155eef;
+  background-color: rgba(21, 94, 239, 0.1);
+}
+
+.v-theme--searchWantDark .sw-seo-cat-pill {
+  color: #60a5fa;
+  background-color: rgba(59, 130, 246, 0.16);
 }
 
 /* Zero-JS Semantic HTML5 <details> FAQ Accordion for Lao Local SEO */

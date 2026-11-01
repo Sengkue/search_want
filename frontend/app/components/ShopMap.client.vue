@@ -11,11 +11,7 @@
     <div
       v-if="!isMapHydrated && mode !== 'picker'"
       class="sw-map-preview-backdrop d-flex flex-column align-center justify-center text-center pa-3"
-      role="button"
-      tabindex="0"
-      aria-label="ແຕະເພື່ອເປີດແຜນທີ່ໂຕ້ຕອບສົດ"
       @click="activateMapNow"
-      @keydown.enter.prevent="activateMapNow"
     >
       <div class="sw-user-pulse mb-2" aria-hidden="true" />
       <div class="text-body-medium font-weight-bold">

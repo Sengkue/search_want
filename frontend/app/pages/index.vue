@@ -442,7 +442,7 @@
         />
 
         <template v-if="nearbyShops.length > 0">
-          <template v-for="(shop, idx) in nearbyShops" :key="shop.id">
+          <template v-for="(shop, idx) in visibleNearbyShops" :key="shop.id">
             <ShopCard
               :shop="shop"
               :selected="shop.id === shopsStore.selectedShopId"
@@ -459,6 +459,19 @@
               />
             </ClientOnly>
           </template>
+
+          <v-btn
+            v-if="nearbyShops.length > visibleShopsLimit"
+            variant="tonal"
+            color="primary"
+            block
+            size="small"
+            prepend-icon="mdi-chevron-down"
+            class="mt-1 mb-2 font-weight-bold"
+            @click="visibleShopsLimit += 10"
+          >
+            ສະແດງຮ້ານເພີ່ມເຕີມອີກ {{ nearbyShops.length - visibleShopsLimit }} ຮ້ານ
+          </v-btn>
         </template>
 
         <v-card v-else-if="!shopsStore.loadingNearby" class="pa-5 text-center">
@@ -510,19 +523,16 @@
         ລະບົບຈັບຄູ່ອາການເປ່ເພຫາຊ່າງ ແລະ ຮ້ານສ້ອມແປງທີ່ຜ່ານການກວດສອບແລ້ວເທິງແຜນທີ່ GPS ທົ່ວນະຄອນຫຼວງວຽງຈັນ ແລະ ສປປ ລາວ:
       </p>
 
-      <!-- Crawlable Internal Category Links for Search Engine Topic Clustering -->
-      <div v-if="shopsStore.categories.length" class="d-flex flex-wrap ga-1 mb-3">
-        <v-chip
+  <!-- Crawlable Internal Category Links for Search Engine Topic Clustering -->
+      <div v-if="shopsStore.categories.length" class="d-flex flex-wrap ga-2 mb-3">
+        <NuxtLink
           v-for="cat in shopsStore.categories"
           :key="`seo-cat-${cat.id}`"
-          size="x-small"
-          variant="tonal"
-          color="primary"
           :to="`/?category=${cat.id}`"
-          :prepend-icon="cat.icon"
+          class="sw-seo-cat-pill text-decoration-none"
         >
           {{ cat.name }} ({{ cat.shop_count }})
-        </v-chip>
+        </NuxtLink>
       </div>
 
       <div>
@@ -551,6 +561,7 @@ const router = useRouter()
 const { smAndDown } = useDisplay()
 
 const mobileViewMode = ref<'split' | 'map' | 'list'>('split')
+const visibleShopsLimit = ref(6)
 
 const seoFaqs = [
   {

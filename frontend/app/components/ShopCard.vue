@@ -83,17 +83,15 @@
       <span class="text-truncate">{{ shop.address }}</span>
     </div>
 
-    <!-- Compact Problem Tags (top 4) -->
+    <!-- Compact Problem Tags (top 4 — lightweight zero-JS CSS pills for ultra-fast mobile hydration) -->
     <div v-if="tagList.length" class="d-flex flex-wrap ga-1 mb-2">
-      <v-chip
+      <span
         v-for="tag in tagList"
         :key="tag"
-        size="x-small"
-        variant="tonal"
-        color="secondary"
+        class="sw-tag-pill"
       >
         {{ tag }}
-      </v-chip>
+      </span>
     </div>
 
     <!-- Clean Action Footer -->
