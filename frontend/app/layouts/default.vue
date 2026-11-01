@@ -246,7 +246,7 @@
     </v-app-bar>
 
     <!-- Main Page Content (No top navbar offset on Mobile; clean bottom clearance for Mobile Footer) -->
-    <v-main :style="smAndDown ? 'padding-bottom: 72px' : ''">
+    <v-main :style="smAndDown ? (isMobileKeyboardOpen ? 'padding-bottom: 12px' : 'padding-bottom: 72px') : ''">
       <slot />
 
       <!-- Mandatory Google AdSense Policy Compliance Footer Link (Privacy & Cookie Disclosure) -->
@@ -263,9 +263,19 @@
       </footer>
     </v-main>
 
-    <!-- MOBILE ONLY Sleek Bottom Footer Bar (Replaces top navbar completely on phone screens) -->
-    <nav v-if="smAndDown" class="sw-mobile-footer" aria-label="ເມນູຫຼັກມືຖື">
-      <NuxtLink to="/" class="sw-footer-item" :class="{ 'is-active': route.path === '/' }">
+    <!-- MOBILE ONLY Sleek Bottom Footer Bar (Auto-hides while virtual keyboard is open on phones) -->
+    <nav
+      v-if="smAndDown"
+      class="sw-mobile-footer"
+      :class="{ 'is-keyboard-open': isMobileKeyboardOpen }"
+      aria-label="ເມນູຫຼັກມືຖື"
+    >
+      <NuxtLink
+        to="/"
+        class="sw-footer-item"
+        :class="{ 'is-active': route.path === '/' }"
+        @click="handleMobileSearchNavTap"
+      >
         <span class="sw-footer-icon-pill">
           <v-icon :icon="route.path === '/' ? 'mdi-compass' : 'mdi-compass-outline'" size="20" />
         </span>
@@ -696,6 +706,83 @@ function handleLogout() {
   router.push('/')
 }
 
+// Keyboard-aware Mobile Bottom Navigation: auto-hides fixed footer when phone virtual keyboard opens
+const hasFocusedTextInput = ref(false)
+const viewportShrunkForKeyboard = ref(false)
+let focusOutTimer: ReturnType<typeof setTimeout> | null = null
+let maxObservedViewportHeight = 0
+
+const NON_KEYBOARD_INPUT_TYPES = new Set([
+  'button',
+  'submit',
+  'reset',
+  'checkbox',
+  'radio',
+  'range',
+  'file',
+  'color',
+  'hidden',
+  'image',
+])
+
+function isTextEditableElement(el: Element | null): boolean {
+  if (!el) return false
+  if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled
+  if (el instanceof HTMLInputElement) {
+    return !el.readOnly && !el.disabled && !NON_KEYBOARD_INPUT_TYPES.has((el.type || 'text').toLowerCase())
+  }
+  return (el as HTMLElement).isContentEditable === true
+}
+
+function handleGlobalFocusIn(e: FocusEvent) {
+  if (focusOutTimer) {
+    clearTimeout(focusOutTimer)
+    focusOutTimer = null
+  }
+  if (isTextEditableElement(e.target as Element | null)) {
+    hasFocusedTextInput.value = true
+  }
+}
+
+function handleGlobalFocusOut() {
+  if (focusOutTimer) clearTimeout(focusOutTimer)
+  focusOutTimer = setTimeout(() => {
+    hasFocusedTextInput.value = isTextEditableElement(document.activeElement)
+  }, 70)
+}
+
+function handleVisualViewportResize() {
+  if (!import.meta.client) return
+  const vv = window.visualViewport
+  if (!vv) return
+  const currentHeight = vv.height
+  if (currentHeight > maxObservedViewportHeight) {
+    maxObservedViewportHeight = currentHeight
+  }
+  const referenceHeight = Math.max(window.screen?.availHeight ? Math.min(window.innerHeight, maxObservedViewportHeight) : maxObservedViewportHeight, window.innerHeight)
+  viewportShrunkForKeyboard.value = referenceHeight - currentHeight > 130
+}
+
+function handleWindowOrientationChange() {
+  maxObservedViewportHeight = 0
+  viewportShrunkForKeyboard.value = false
+}
+
+const isMobileKeyboardOpen = computed(
+  () => smAndDown.value && (hasFocusedTextInput.value || viewportShrunkForKeyboard.value),
+)
+
+function handleMobileSearchNavTap() {
+  if (import.meta.client) {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+    if (route.path === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+}
+
 onMounted(() => {
   authStore.initAuth()
   loadAdSenseConfig()
@@ -703,5 +790,19 @@ onMounted(() => {
     window.matchMedia?.('(display-mode: standalone)').matches ||
     Boolean((window.navigator as any)?.standalone)
   showInstallButton.value = !isNativeApp() && !standalone
+
+  maxObservedViewportHeight = window.visualViewport?.height || window.innerHeight
+  document.addEventListener('focusin', handleGlobalFocusIn, { passive: true })
+  document.addEventListener('focusout', handleGlobalFocusOut, { passive: true })
+  window.visualViewport?.addEventListener('resize', handleVisualViewportResize, { passive: true })
+  window.addEventListener('orientationchange', handleWindowOrientationChange, { passive: true })
+})
+
+onBeforeUnmount(() => {
+  if (focusOutTimer) clearTimeout(focusOutTimer)
+  document.removeEventListener('focusin', handleGlobalFocusIn)
+  document.removeEventListener('focusout', handleGlobalFocusOut)
+  window.visualViewport?.removeEventListener('resize', handleVisualViewportResize)
+  window.removeEventListener('orientationchange', handleWindowOrientationChange)
 })
 </script>
