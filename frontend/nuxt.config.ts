@@ -1,3 +1,9 @@
+const backendOrigin = (
+  process.env.BACKEND_INTERNAL_URL ||
+  process.env.NUXT_PUBLIC_API_BASE ||
+  'http://127.0.0.1:8000'
+).replace(/\/$/, '')
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2026-10-30',
