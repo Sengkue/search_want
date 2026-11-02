@@ -67,20 +67,20 @@ export default defineNuxtConfig({
     },
     devProxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000/api',
+        target: `${backendOrigin}/api`,
         changeOrigin: true,
       },
       '/ads.txt': {
-        target: 'http://127.0.0.1:8000/ads.txt',
+        target: `${backendOrigin}/ads.txt`,
         changeOrigin: true,
       },
     },
     routeRules: {
       '/api/**': {
-        proxy: 'http://127.0.0.1:8000/api/**',
+        proxy: `${backendOrigin}/api/**`,
       },
       '/ads.txt': {
-        proxy: 'http://127.0.0.1:8000/ads.txt',
+        proxy: `${backendOrigin}/ads.txt`,
       },
       '/_nuxt/**': {
         headers: {
